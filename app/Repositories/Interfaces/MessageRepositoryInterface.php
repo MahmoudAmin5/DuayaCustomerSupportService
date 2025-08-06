@@ -1,7 +1,15 @@
 <?php
 namespace App\Repositories\Interfaces;
 
+use App\Models\Message;
+use Illuminate\Support\Collection;
+
 interface MessageRepositoryInterface
 {
-    public function createMessage(array $data);
+    public function createMessage(array $data): Message;
+    public function findMessageById(int $id): ?Message;
+    public function getMessagesByChatId(int $chatId): Collection;
+
+    public function saveMessage(Message $message): bool;
+
 }
