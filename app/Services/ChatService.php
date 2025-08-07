@@ -1,7 +1,7 @@
 <?php
 namespace App\Services;
 use App\Models\Chat;
-use App\Models\User;
+use App\Models\Message;
 use Illuminate\Support\Facades\DB;
 use App\Repositories\Interfaces\ChatRepositoryInterface;
 use App\Repositories\Interfaces\MessageRepositoryInterface;
@@ -48,4 +48,22 @@ class ChatService implements ChatServiceInterface
 
         });
     }
+   public function sendMessage(array $data): Message
+{
+    $messageData = [
+        'chat_id' => $data['chat_id'],
+        'sender_id' => $data['sender_id'],
+        'type'    => $data['type'] ?? 'text',
+    ];
+
+    if ($messageData['type'] === 'text') {
+        $messageData['content'] = $data['content'];
+    } elseif (in_array($messageData['type'], ['image', 'file'])) {
+        // Upload the file
+        $path = $data['file']->store('messages'); // or 'chat_uploads'
+        $messageData['file_path'] = $path;
+    }
+
+    return $this->messageRepo->createMessage($messageData);
+}
 }
