@@ -20,4 +20,5 @@ interface UserRepositoryInterface
     public function delete(User $user): bool;
 
     public function all(): Collection;
+     public function firstOrCreateByPhone(string $phone): User;
 }

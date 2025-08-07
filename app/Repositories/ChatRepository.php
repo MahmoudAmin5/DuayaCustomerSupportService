@@ -1,4 +1,5 @@
 <?php
+namespace App\Repositories;
 use App\Models\Chat;
 use App\Models\User;
 use App\Repositories\Interfaces\ChatRepositoryInterface;
