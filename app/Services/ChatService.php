@@ -1,11 +1,14 @@
 <?php
+
 namespace App\Services;
+
 use App\Models\Chat;
 use App\Models\Message;
 use Illuminate\Support\Facades\DB;
 use App\Repositories\Interfaces\ChatRepositoryInterface;
 use App\Repositories\Interfaces\MessageRepositoryInterface;
 use App\Repositories\Interfaces\UserRepositoryInterface;
+use App\Services\Interfaces\ChatServiceInterface;
 
 class ChatService implements ChatServiceInterface
 {
@@ -24,46 +27,50 @@ class ChatService implements ChatServiceInterface
     }
     public function startChat(array $data): Chat
     {
-        return DB::transaction(function () use ($data)
-        {
-             $customer = $this->userRepo->firstOrCreateByPhone($data['phone']);
-             $existingChat = $this->chatRepo->findActiveChatByCustomer($customer->id);
+        return DB::transaction(function () use ($data) {
+            $customer = $this->userRepo->firstOrCreateByPhone($data['phone'],$data['name'] ?? 'Unknown Customer');
 
-             if ($existingChat) {
-                 return $existingChat;
-             }
+            // Check if customer already has an active chat
+            $existingChat = $this->chatRepo->findActiveChatByCustomer($customer->id);
+            if ($existingChat) {
+                return $existingChat;
+            }
 
-             $agent = $this->userRepo->getFirstAvailableAgent();
+            // Get an available agent
+            $agent = $this->userRepo->getFirstAvailableAgent();
+            if (!$agent) {
+                return null; // No available agents
+            }
 
-             if (!$agent) return null ; // No available agent
-             $newChat = $this->chatRepo->findOrCreateChat($customer->id, $agent->id);
+            // Create chat
+            $newChat = $this->chatRepo->findOrCreateChat($customer->id, $agent->id);
 
-             $message = $this->messageRepo->createMessage([
-                 'chat_id' => $newChat->id,
-                 'user_id' => $customer->id,
-                 'content' => $data['message'],
-             ]);
+            // Store message via relationship (safe, clean)
+            $newChat->messages()->create([
+                'sender_id' => $customer->id,
+                'chat_id' => $newChat->id,
+                'content' => $data['message'], // can be string, image, etc.
+            ]);
 
-               return $newChat;
-
+            return $newChat->load('messages'); // optional: eager load messages
         });
     }
-   public function sendMessage(array $data): Message
-{
-    $messageData = [
-        'chat_id' => $data['chat_id'],
-        'sender_id' => $data['sender_id'],
-        'type'    => $data['type'] ?? 'text',
-    ];
+    public function sendMessage(array $data): Message
+    {
+        $messageData = [
+            'chat_id' => $data['chat_id'],
+            'sender_id' => $data['sender_id'],
+            'type'    => $data['type'] ?? 'text',
+        ];
 
-    if ($messageData['type'] === 'text') {
-        $messageData['content'] = $data['content'];
-    } elseif (in_array($messageData['type'], ['image', 'file'])) {
-        // Upload the file
-        $path = $data['file']->store('messages'); // or 'chat_uploads'
-        $messageData['file_path'] = $path;
+        if ($messageData['type'] === 'text') {
+            $messageData['content'] = $data['content'];
+        } elseif (in_array($messageData['type'], ['image', 'file'])) {
+            // Upload the file
+            $path = $data['file']->store('messages'); // or 'chat_uploads'
+            $messageData['file_path'] = $path;
+        }
+
+        return $this->messageRepo->createMessage($messageData);
     }
-
-    return $this->messageRepo->createMessage($messageData);
-}
 }
