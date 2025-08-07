@@ -36,6 +36,11 @@ class ChatRepository implements ChatRepositoryInterface
      public function save(Chat $chat): bool{
         return $chat->save();
      }
+     public function deactivateChat(int $chatId): bool
+     {
+        return Chat::where('id', $chatId)->update(['is_active' => false]);
+     }
+
 
 
 }

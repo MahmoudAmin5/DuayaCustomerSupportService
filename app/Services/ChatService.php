@@ -22,12 +22,30 @@ class ChatService implements ChatServiceInterface
         $this->messageRepo = $messageRepo;
         $this->userRepo = $userRepo;
     }
-    public function StartChat(array $data): Chat
+    public function startChat(array $data): Chat
     {
         return DB::transaction(function () use ($data)
         {
              $customer = $this->userRepo->firstOrCreateByPhone($data['phone']);
-             
+             $existingChat = $this->chatRepo->findActiveChatByCustomer($customer->id);
+
+             if ($existingChat) {
+                 return $existingChat;
+             }
+
+             $agent = $this->userRepo->getFirstAvailableAgent();
+
+             if (!$agent) return null ; // No available agent
+             $newChat = $this->chatRepo->findOrCreateChat($customer->id, $agent->id);
+
+             $message = $this->messageRepo->createMessage([
+                 'chat_id' => $newChat->id,
+                 'user_id' => $customer->id,
+                 'content' => $data['message'],
+             ]);
+
+               return $newChat;
+
         });
     }
 }
