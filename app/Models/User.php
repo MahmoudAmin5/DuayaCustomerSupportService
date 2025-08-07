@@ -47,11 +47,11 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
-    public function customerChats()
+    public function chatsAsCustomer()
     {
         return $this->hasMany(Chat::class, 'customer_id');
     }
-    public function agentChats()
+    public function chatsAsAgent()
     {
         return $this->hasMany(Chat::class, 'agent_id');
     }
