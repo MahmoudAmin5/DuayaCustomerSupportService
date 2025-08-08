@@ -33,7 +33,7 @@ class ChatService implements ChatServiceInterface
             // Check if customer already has an active chat
             $existingChat = $this->chatRepo->findActiveChatByCustomer($customer->id);
             if ($existingChat) {
-                return $existingChat;
+                return $existingChat->load('messages'); // return existing chat with messages
             }
 
             // Get an available agent

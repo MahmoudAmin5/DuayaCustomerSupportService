@@ -37,7 +37,7 @@ class ChatController extends Controller
     {
         $validated = $request->validate([
             'chat_id' => 'required|exists:chats,id',
-            'user_id' => 'required|exists:users,id',
+            'sender_id' => 'required|exists:users,id',
             'type'    => 'required|in:text,image,file',
             'content' => 'nullable|string',
             'file'    => 'nullable|file|max:20480', // max 20MB
