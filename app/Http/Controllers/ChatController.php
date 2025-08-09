@@ -47,4 +47,14 @@ class ChatController extends Controller
 
         return response()->json(['message' => $message], 201);
     }
+    public function getChatMessages($chatId): JsonResponse
+    {
+        $messages = $this->chatService->getChatMessages($chatId);
+
+        if ($messages->isEmpty()) {
+            return response()->json(['message' => 'No messages found'], 404);
+        }
+
+        return response()->json(['messages' => $messages], 200);
+    }
 }

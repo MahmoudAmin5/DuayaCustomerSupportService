@@ -9,6 +9,7 @@ use App\Repositories\Interfaces\ChatRepositoryInterface;
 use App\Repositories\Interfaces\MessageRepositoryInterface;
 use App\Repositories\Interfaces\UserRepositoryInterface;
 use App\Services\Interfaces\ChatServiceInterface;
+use \Illuminate\Database\Eloquent\Collection;
 
 class ChatService implements ChatServiceInterface
 {
@@ -28,7 +29,7 @@ class ChatService implements ChatServiceInterface
     public function startChat(array $data): Chat
     {
         return DB::transaction(function () use ($data) {
-            $customer = $this->userRepo->firstOrCreateByPhone($data['phone'],$data['name'] ?? 'Unknown Customer');
+            $customer = $this->userRepo->firstOrCreateByPhone($data['phone'], $data['name'] ?? 'Unknown Customer');
 
             // Check if customer already has an active chat
             $existingChat = $this->chatRepo->findActiveChatByCustomer($customer->id);
@@ -72,5 +73,9 @@ class ChatService implements ChatServiceInterface
         }
 
         return $this->messageRepo->createMessage($messageData);
+    }
+    public function getChatMessages(int $chatId): Collection
+    {
+        return $this->messageRepo->getMessagesByChatId($chatId);
     }
 }

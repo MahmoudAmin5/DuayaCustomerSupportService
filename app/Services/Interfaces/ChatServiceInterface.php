@@ -9,9 +9,11 @@ use App\Repositories\Interfaces\ChatRepositoryInterface;
 use App\Repositories\Interfaces\MessageRepositoryInterface;
 use App\Repositories\Interfaces\UserRepositoryInterface;
 use \App\Models\Message;
+use \Illuminate\Database\Eloquent\Collection;
 
 interface ChatServiceInterface
 {
-    public function StartChat(array $data): Chat;
+    public function startChat(array $data): Chat;
     public function sendMessage(array $data): Message;
+    public function getChatMessages(int $chatId): Collection;
 }
