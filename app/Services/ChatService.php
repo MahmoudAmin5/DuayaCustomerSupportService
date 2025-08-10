@@ -10,6 +10,7 @@ use App\Repositories\Interfaces\MessageRepositoryInterface;
 use App\Repositories\Interfaces\UserRepositoryInterface;
 use App\Services\Interfaces\ChatServiceInterface;
 use \Illuminate\Database\Eloquent\Collection;
+use App\Events\MessageSent;
 
 class ChatService implements ChatServiceInterface
 {
@@ -72,7 +73,9 @@ class ChatService implements ChatServiceInterface
             $messageData['file_path'] = $path;
         }
 
-        return $this->messageRepo->createMessage($messageData);
+        $message = $this->messageRepo->createMessage($messageData);
+       broadcast(new MessageSent($message))->toOthers();
+       return $message; // return the created message
     }
     public function getChatMessages(int $chatId): Collection
     {
