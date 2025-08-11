@@ -12,7 +12,7 @@ class ChatRepository implements ChatRepositoryInterface
         return Chat::firstOrCreate([
             'customer_id' => $customerId,
             'agent_id' => $agentId,
-            'is_active' => true
+            'is_active' => 1
         ]);
     }
 
@@ -25,9 +25,10 @@ class ChatRepository implements ChatRepositoryInterface
     public function findActiveChatByAgent(int $agentId): ?Chat
     {
         return Chat::where('agent_id', $agentId)
-            ->where('is_active', true)
+            ->where('is_active', 1)
             ->first();
     }
+
     public function getChatsByAgent(int $agentId): Collection{
         return Chat::where('agent_id', $agentId)
             ->latest()
@@ -38,7 +39,7 @@ class ChatRepository implements ChatRepositoryInterface
      }
      public function deactivateChat(int $chatId): bool
      {
-        return Chat::where('id', $chatId)->update(['is_active' => false]);
+        return Chat::where('id', $chatId)->update(['is_active' => 0]);
      }
       public function getChatById(int $chatId): ?Chat
      {

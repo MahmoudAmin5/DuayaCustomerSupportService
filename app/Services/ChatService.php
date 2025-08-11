@@ -11,21 +11,25 @@ use App\Repositories\Interfaces\UserRepositoryInterface;
 use App\Services\Interfaces\ChatServiceInterface;
 use \Illuminate\Database\Eloquent\Collection;
 use App\Events\MessageSent;
+use App\Repositories\Interfaces\AgentRepositoryInterface;
 
 class ChatService implements ChatServiceInterface
 {
     protected $chatRepo;
     protected $messageRepo;
     protected $userRepo;
+    protected $agentRepo;
 
     public function __construct(
         ChatRepositoryInterface $chatRepo,
         MessageRepositoryInterface $messageRepo,
-        UserRepositoryInterface $userRepo
+        UserRepositoryInterface $userRepo,
+        AgentRepositoryInterface $agentRepo
     ) {
         $this->chatRepo = $chatRepo;
         $this->messageRepo = $messageRepo;
         $this->userRepo = $userRepo;
+        $this->agentRepo = $agentRepo;
     }
     public function startChat(array $data): Chat
     {
@@ -39,7 +43,7 @@ class ChatService implements ChatServiceInterface
             }
 
             // Get an available agent
-            $agent = $this->userRepo->getFirstAvailableAgent();
+            $agent = $this->agentRepo->getFirstAvailableAgent();
             if (!$agent) {
                 return null; // No available agents
             }

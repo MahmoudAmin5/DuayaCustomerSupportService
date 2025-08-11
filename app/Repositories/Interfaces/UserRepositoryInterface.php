@@ -11,8 +11,6 @@ interface UserRepositoryInterface
 
     public function findByPhone(string $phone): ?User;
 
-    public function getFirstAvailableAgent(): ?User;
-
     public function create(array $data): User;
 
     public function update(User $user, array $data): bool;

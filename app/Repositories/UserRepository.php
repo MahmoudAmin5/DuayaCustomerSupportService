@@ -23,14 +23,7 @@ class UserRepository implements UserRepositoryInterface
         return User::where('phone', $phone)->first();
     }
 
-    public function getFirstAvailableAgent(): ?User
-    {
-        return User::where('role', 'agent')
-            ->whereDoesntHave('chatsAsAgent', function ($query) {
-                $query->where('is_active', true);
-            })
-            ->first();
-    }
+    
 
     public function create(array $data): User
     {
