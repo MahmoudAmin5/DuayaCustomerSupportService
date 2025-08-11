@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\Message\GetMessageResource;
+use App\Http\Resources\Chat\GetChatResource;
 use Illuminate\Http\Request;
 use App\Services\Interfaces\ChatServiceInterface;
 use Illuminate\Http\JsonResponse;
@@ -19,6 +21,7 @@ class ChatController extends Controller
     public function startChat(Request $request): JsonResponse
     {
         $validated = $request->validate([
+            'name' => 'nullable|string|max:255',
             'phone' => 'required|string',
             'message' => 'required|string',
         ]);
@@ -28,7 +31,7 @@ class ChatController extends Controller
         if (!$chat) {
             return response()->json(['message' => 'No available agents'], 400);
         }
-
+        $chat = new GetChatResource($chat); // Transform the chat resource
         return response()->json(['chat' => $chat], 201);
     }
 
@@ -44,17 +47,27 @@ class ChatController extends Controller
         ]);
 
         $message = $this->chatService->sendMessage($validated);
-
-        return response()->json(['message' => $message], 201);
+        if (!$message) {
+            return response()->json(['message' => 'Failed to send message'], 500);
+        }
+        $messages = new GetMessageResource($message); // Transform the message resource
+        return response()->json(['message' => $messages], 201);
     }
-    public function getChatMessages($chatId): JsonResponse
+    public function getChatMessages(Request $request): JsonResponse
     {
+         $chatId = $request->query('chatId');
         $messages = $this->chatService->getChatMessages($chatId);
 
         if ($messages->isEmpty()) {
             return response()->json(['message' => 'No messages found'], 404);
         }
-
+        $messages = GetMessageResource::collection($messages);
         return response()->json(['messages' => $messages], 200);
     }
+    public function showChat($chatId)
+{
+    return view('chat', [
+        'chatId' => $chatId
+    ]);
+}
 }

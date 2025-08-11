@@ -40,7 +40,9 @@ class ChatRepository implements ChatRepositoryInterface
      {
         return Chat::where('id', $chatId)->update(['is_active' => false]);
      }
-
-
+      public function getChatById(int $chatId): ?Chat
+     {
+         return Chat::find($chatId);
+     }
 
 }

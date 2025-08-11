@@ -68,14 +68,20 @@ class ChatService implements ChatServiceInterface
         if ($messageData['type'] === 'text') {
             $messageData['content'] = $data['content'];
         } elseif (in_array($messageData['type'], ['image', 'file'])) {
-            // Upload the file
-            $path = $data['file']->store('messages'); // or 'chat_uploads'
+            $path = $data['file']->store('messages');
             $messageData['file_path'] = $path;
+        }
+        $chat = $this->chatRepo->getChatById($data['chat_id']);
+        if (!$chat) {
+            throw new \Exception('Chat not found.');
+        }
+        if ($chat->customer_id !== $data['sender_id'] && $chat->agent_id !== $data['sender_id']) {
+            throw new \Exception('You are not a participant in this chat.');
         }
 
         $message = $this->messageRepo->createMessage($messageData);
-       broadcast(new MessageSent($message))->toOthers();
-       return $message; // return the created message
+        broadcast(new MessageSent($message))->toOthers();
+        return $message; // return the created message
     }
     public function getChatMessages(int $chatId): Collection
     {
