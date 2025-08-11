@@ -23,7 +23,7 @@ class UserRepository implements UserRepositoryInterface
         return User::where('phone', $phone)->first();
     }
 
-    
+
 
     public function create(array $data): User
     {
@@ -49,7 +49,6 @@ class UserRepository implements UserRepositoryInterface
         return User::firstOrCreate(
             ['phone' => $phone],
             ['name' => $name],
-            ['role' => 'customer']
         );
     }
 }

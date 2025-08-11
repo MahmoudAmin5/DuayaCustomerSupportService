@@ -13,7 +13,7 @@ use \Illuminate\Database\Eloquent\Collection;
 
 interface ChatServiceInterface
 {
-    public function startChat(array $data): Chat;
-    public function sendMessage(array $data): Message;
+    public function startChat(array $data): ?Chat;
+    public function sendMessage(array $data): ?Message;
     public function getChatMessages(int $chatId): Collection;
 }

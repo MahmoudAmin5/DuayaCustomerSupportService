@@ -4,17 +4,20 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\Message\GetMessageResource;
 use App\Http\Resources\Chat\GetChatResource;
+use App\Repositories\Interfaces\ChatRepositoryInterface;
 use Illuminate\Http\Request;
 use App\Services\Interfaces\ChatServiceInterface;
 use Illuminate\Http\JsonResponse;
 
 class ChatController extends Controller
 {
-     protected $chatService;
+    protected $chatService;
+    protected $chatRepo;
 
-    public function __construct(ChatServiceInterface $chatService)
+    public function __construct(ChatServiceInterface $chatService, ChatRepositoryInterface $chatRepo)
     {
         $this->chatService = $chatService;
+        $this->chatRepo = $chatRepo;
     }
 
     // Start a new chat or return existing active one
@@ -50,12 +53,15 @@ class ChatController extends Controller
         if (!$message) {
             return response()->json(['message' => 'Failed to send message'], 500);
         }
-        $messages = new GetMessageResource($message); // Transform the message resource
-        return response()->json(['message' => $messages], 201);
+        return response()->json([
+            'message' => new GetMessageResource($message)
+        ], 201);
     }
+
+
     public function getChatMessages(Request $request): JsonResponse
     {
-         $chatId = $request->query('chatId');
+        $chatId = $request->query('chatId');
         $messages = $this->chatService->getChatMessages($chatId);
 
         if ($messages->isEmpty()) {
@@ -65,9 +71,36 @@ class ChatController extends Controller
         return response()->json(['messages' => $messages], 200);
     }
     public function showChat($chatId)
-{
-    return view('chat', [
-        'chatId' => $chatId
-    ]);
-}
+    {
+        $chat = $this->chatRepo->getChatById($chatId);
+        $messages = $this->chatService->getChatMessages($chatId);
+
+        return view('chat', [
+            'chat' => $chat,
+            'messages' => $messages
+        ]);
+    }
+
+    public function startChatWeb(Request $request): \Illuminate\Http\RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => 'nullable|string|max:255',
+            'phone' => 'required|string',
+            'message' => 'required|string',
+        ]);
+
+        // call existing service (it returns Chat or null)
+        $chat = $this->chatService->startChat($validated);
+
+        if (!$chat) {
+            return back()->withErrors(['phone' => 'No agents available right now. Please try later.'])->withInput();
+        }
+
+        // log the customer in to create session so private channel auth works
+        // chat has customer_id (user model). If you prefer to avoid login, use token-based approach instead.
+        \Illuminate\Support\Facades\Auth::loginUsingId($chat->customer_id);
+
+        // redirect to web chat page
+        return redirect()->route('chat.view', ['chatId' => $chat->id]);
+    }
 }

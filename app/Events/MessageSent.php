@@ -4,6 +4,7 @@ namespace App\Events;
 
 use App\Models\Message;
 use Illuminate\Broadcasting\Channel;
+use App\Http\Resources\Message\GetMessageResource;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
@@ -22,7 +23,7 @@ class MessageSent implements ShouldBroadcast
      */
     public function __construct(Message $message)
     {
-        $this->message = $message;
+         $this->message = new GetMessageResource($message);
     }
 
     /**

@@ -9,7 +9,7 @@ class AgentSeeder extends Seeder
 {
     public function run(): void
     {
-        User::factory()->count(5)->create([
+        User::factory()->count(10)->create([
             'role' => 'agent',
         ]);
     }

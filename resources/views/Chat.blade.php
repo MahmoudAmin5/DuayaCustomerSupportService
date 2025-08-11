@@ -1,74 +1,89 @@
-<!-- resources/views/chat.blade.php -->
+{{-- resources/views/chat/chat.blade.php --}}
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-    <title>Chat</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://js.pusher.com/8.2/pusher.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Chat</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <style>
+        body { background: #f8f9fa; }
+        .chat-box { height: 70vh; overflow-y: auto; background: #fff; border-radius: 10px; padding: 15px; }
+        .message { max-width: 70%; padding: 10px; border-radius: 15px; margin-bottom: 8px; }
+        .sent { background: #0d6efd; color: white; margin-left: auto; }
+        .received { background: #e9ecef; color: black; margin-right: auto; }
+        .message-time { font-size: 0.75rem; opacity: 0.7; }
+    </style>
 </head>
+<body>
 
-<body class="bg-light">
+<div class="container py-4">
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">💬 Chat Room</h5>
+        </div>
+        <div class="card-body d-flex flex-column">
+            <div id="chatBox" class="chat-box mb-3"></div>
 
-    <div class="container mt-5">
-        <div class="card shadow">
-            <div class="card-header bg-primary text-white">
-                Chat with Support
-                @if($chat->is_active)
-                    <span class="badge bg-success float-end">Active</span>
-                @else
-                    <span class="badge bg-danger float-end">Closed</span>
-                @endif
-            </div>
-            <div class="card-body" id="chat-box" style="height: 400px; overflow-y: scroll;">
-                @foreach($messages as $message)
-                    <div class="mb-2">
-                        <strong>{{ $message->sender_type }}:</strong> {{ $message->content }}
-                    </div>
-                @endforeach
-            </div>
-
-            @if($chat->is_active)
-                <div class="card-footer">
-                    <form id="send-message">
-                        @csrf
-                        <div class="input-group">
-                            <input type="text" name="content" class="form-control" placeholder="Type your message..."
-                                required>
-                            <button class="btn btn-primary">Send</button>
-                        </div>
-                    </form>
-                </div>
-            @else
-                <div class="p-3 text-center text-muted">
-                    This chat is closed.
-                </div>
-            @endif
+            <form id="sendMessageForm" class="d-flex">
+                <input type="text" id="messageInput" name="content" class="form-control me-2" placeholder="Type a message..." required>
+                <button class="btn btn-primary">Send</button>
+            </form>
         </div>
     </div>
+</div>
 
-    <script>
-        // Enable pusher logging for debugging
-        Pusher.logToConsole = true;
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    const chatId = "{{ $chat_id ?? '' }}"; // Pass this from controller after starting chat
+    const senderId = "{{ auth()->id() ?? '' }}"; // Current user ID
 
-        var pusher = new Pusher("{{ env('PUSHER_APP_KEY') }}", {
-            cluster: "{{ env('PUSHER_APP_CLUSTER') }}"
+    function fetchMessages() {
+        $.ajax({
+            url: `/api/chat/messages?chat_id=${chatId}`,
+            type: 'GET',
+            success: function (data) {
+                $('#chatBox').empty();
+                data.messages.forEach(msg => {
+                    const alignment = msg.sender_id == senderId ? 'sent' : 'received';
+                    $('#chatBox').append(`
+                        <div class="d-flex flex-column ${alignment === 'sent' ? 'align-items-end' : 'align-items-start'}">
+                            <div class="message ${alignment}">
+                                ${msg.content || '<em>File Uploaded</em>'}
+                                <div class="message-time">${msg.created_at}</div>
+                            </div>
+                        </div>
+                    `);
+                });
+                $('#chatBox').scrollTop($('#chatBox')[0].scrollHeight);
+            }
         });
+    }
 
-        var channel = pusher.subscribe("chat.{{ $chat->id }}");
-        channel.bind("new-message", function (data) {
-            $("#chat-box").append(`<div><strong>${data.sender_type}:</strong> ${data.content}</div>`);
-            $("#chat-box").scrollTop($("#chat-box")[0].scrollHeight);
+    $('#sendMessageForm').on('submit', function (e) {
+        e.preventDefault();
+        const message = $('#messageInput').val();
+
+        $.ajax({
+            url: '/api/chat/send',
+            type: 'POST',
+            data: {
+                chat_id: chatId,
+                sender_id: senderId,
+                type: 'text',
+                content: message
+            },
+            success: function () {
+                $('#messageInput').val('');
+                fetchMessages();
+            }
         });
+    });
 
-        $("#send-message").submit(function (e) {
-            e.preventDefault();
-            $.post("{{ route('chat.send', $chat->id) }}", $(this).serialize());
-            $(this).find("input[name=content]").val("");
-        });
-    </script>
-
+    // Load messages every 0.5 seconds
+    setInterval(fetchMessages, 500);
+    fetchMessages();
+</script>
 </body>
-
 </html>

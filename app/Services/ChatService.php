@@ -11,6 +11,7 @@ use App\Repositories\Interfaces\UserRepositoryInterface;
 use App\Services\Interfaces\ChatServiceInterface;
 use \Illuminate\Database\Eloquent\Collection;
 use App\Events\MessageSent;
+use App\Http\Resources\Message\GetMessageResource;
 use App\Repositories\Interfaces\AgentRepositoryInterface;
 
 class ChatService implements ChatServiceInterface
@@ -31,7 +32,7 @@ class ChatService implements ChatServiceInterface
         $this->userRepo = $userRepo;
         $this->agentRepo = $agentRepo;
     }
-    public function startChat(array $data): Chat
+    public function startChat(array $data): ?Chat
     {
         return DB::transaction(function () use ($data) {
             $customer = $this->userRepo->firstOrCreateByPhone($data['phone'], $data['name'] ?? 'Unknown Customer');
@@ -61,31 +62,43 @@ class ChatService implements ChatServiceInterface
             return $newChat->load('messages'); // optional: eager load messages
         });
     }
-    public function sendMessage(array $data): Message
+    public function sendMessage(array $data): ?Message
     {
-        $messageData = [
-            'chat_id' => $data['chat_id'],
-            'sender_id' => $data['sender_id'],
-            'type'    => $data['type'] ?? 'text',
-        ];
-
-        if ($messageData['type'] === 'text') {
-            $messageData['content'] = $data['content'];
-        } elseif (in_array($messageData['type'], ['image', 'file'])) {
-            $path = $data['file']->store('messages');
-            $messageData['file_path'] = $path;
-        }
         $chat = $this->chatRepo->getChatById($data['chat_id']);
         if (!$chat) {
             throw new \Exception('Chat not found.');
         }
-        if ($chat->customer_id !== $data['sender_id'] && $chat->agent_id !== $data['sender_id']) {
+
+        if (!in_array($data['sender_id'], [$chat->customer_id, $chat->agent_id])) {
             throw new \Exception('You are not a participant in this chat.');
+        }
+
+        $messageData = [
+            'chat_id'   => $data['chat_id'],
+            'sender_id' => $data['sender_id'],
+            'type'      => $data['type'] ?? 'text',
+        ];
+
+        if ($messageData['type'] === 'text') {
+            if (empty($data['content'])) {
+                throw new \InvalidArgumentException('Content is required for text messages.');
+            }
+            $messageData['content'] = $data['content'];
+        } elseif (in_array($messageData['type'], ['image', 'file'])) {
+            if (empty($data['file'])) {
+                throw new \InvalidArgumentException('File is required for file/image messages.');
+            }
+            $path = $data['file']->storeAs(
+                'messages',
+                uniqid() . '.' . $data['file']->getClientOriginalExtension()
+            );
+            $messageData['file_path'] = $path;
         }
 
         $message = $this->messageRepo->createMessage($messageData);
         broadcast(new MessageSent($message))->toOthers();
-        return $message; // return the created message
+
+        return $message;
     }
     public function getChatMessages(int $chatId): Collection
     {
