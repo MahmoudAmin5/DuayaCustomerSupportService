@@ -9,7 +9,7 @@ use App\Repositories\Interfaces\AgentRepositoryInterface;
 
 class AgentRepository implements AgentRepositoryInterface
 {
-    
+
 
     public function getChatsByAgent(int $agentId): Collection
     {

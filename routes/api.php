@@ -11,4 +11,4 @@ Route::get('/user', function (Request $request) {
 
 Route::post('/chat/start', [ChatController::class, 'startChat'])->name('start.chat');
 Route::post('/chat/send', [ChatController::class, 'sendMessage'])->name('chat.send');
-Route::get('/chat/messages', [ChatController::class, 'getChatMessages'])->name('chat.messages');
+Route::get('/chat/{chatId}/messages', [ChatController::class, 'getChatMessages'])->name('chat.messages');
