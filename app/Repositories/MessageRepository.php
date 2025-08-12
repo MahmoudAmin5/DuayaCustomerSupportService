@@ -9,7 +9,7 @@ class MessageRepository implements MessageRepositoryInterface
 {
     public function createMessage(array $data): Message
     {
-        return Message::create($data);
+        return Message::create($data)->load('sender');
     }
      public function findMessageById(int $id): ?Message {
          return Message::find($id);

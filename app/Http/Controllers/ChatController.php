@@ -26,7 +26,6 @@ class ChatController extends Controller
         $validated = $request->validate([
             'name' => 'nullable|string|max:255',
             'phone' => 'required|string',
-            'message' => 'required|string',
         ]);
 
         $chat = $this->chatService->startChat($validated);
@@ -70,16 +69,7 @@ class ChatController extends Controller
         $messages = GetMessageResource::collection($messages);
         return response()->json(['messages' => $messages], 200);
     }
-    public function showChat($chatId)
-    {
-        $chat = $this->chatRepo->getChatById($chatId);
-        $messages = $this->chatService->getChatMessages($chatId);
 
-        return view('chat', [
-            'chat' => $chat,
-            'messages' => $messages
-        ]);
-    }
 
     public function startChatWeb(Request $request): \Illuminate\Http\RedirectResponse
     {

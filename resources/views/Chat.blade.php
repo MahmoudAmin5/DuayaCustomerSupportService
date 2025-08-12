@@ -31,81 +31,32 @@
                     </div>
                 </div>
             @endforeach
+
+            @if(session('message'))
+                @php $msg = session('message'); @endphp
+                <div class="flex {{ $msg->sender_id == auth()->id() ? 'justify-end' : 'justify-start' }}">
+                    <div
+                        class="{{ $msg->sender_id == auth()->id() ? 'bg-indigo-500 text-white' : 'bg-gray-200 text-gray-900' }} px-4 py-2 rounded-lg max-w-xs break-words">
+                        {{ $msg->content }}
+                        <div class="text-xs opacity-70 mt-1">{{ $msg->created_at }}</div>
+                    </div>
+                </div>
+            @endif
         </div>
 
         <!-- Input Area -->
-        <form id="chatForm" class="flex border-t p-3">
-            <input type="text" id="messageInput" name="message"
-                class="flex-1 border rounded-l-lg p-2 focus:outline-none" placeholder="Type a message...">
+        <form action="{{ route('chat.send', ['chatId' => $chat->id]) }}" method="POST" enctype="multipart/form-data" class="flex border-t p-3">
+            @csrf
+            <input type="hidden" name="chat_id" value="{{ $chat->id }}">
+            <input type="hidden" name="sender_id" value="{{ $sender_id }}">
+            <input type="hidden" name="type" value="text">
+            <input type="text" name="content" class="flex-1 border rounded-l-lg p-2 focus:outline-none"
+                placeholder="Type a message..." required>
             <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-r-lg hover:bg-indigo-700">
                 Send
             </button>
         </form>
     </div>
-
-    <script>
-        const chatId = {{ $chat->id }};
-        const authId = {{ auth()->id() }};
-        const messagesContainer = document.getElementById('messages');
-        const messageInput = document.getElementById('messageInput');
-        const chatForm = document.getElementById('chatForm');
-
-        // Auto-scroll to bottom
-        function scrollToBottom() {
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }
-        scrollToBottom();
-
-        // Append single message to chat
-        function appendMessage(msg)
-        {
-            const isMine = msg.sender_id == authId;
-            const msgHTML = `
-                <div class="flex ${isMine ? 'justify-end' : 'justify-start'}">
-                    <div class="${isMine ? 'bg-indigo-500 text-white' : 'bg-gray-200 text-gray-900'} px-4 py-2 rounded-lg max-w-xs break-words">
-                        ${msg.content}
-                        <div class="text-xs opacity-70 mt-1">${new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                    </div>
-                </div>
-            `;
-            messagesContainer.insertAdjacentHTML('beforeend', msgHTML);
-            scrollToBottom();
-        }
-
-        // Send message via AJAX
-        chatForm.addEventListener('submit', async function (e) {
-            e.preventDefault();
-            let messageText = messageInput.value.trim();
-            if (!messageText) return;
-
-            const res = await fetch(`/chat/send`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                },
-                body: JSON.stringify({ chat_id: chatId, message: messageText })
-            });
-
-            if (res.ok) {
-                const newMsg = await res.json(); // expects message JSON back from controller
-                appendMessage(newMsg);
-                messageInput.value = '';
-            }
-        });
-
-        // Load all messages
-        async function loadMessages() {
-            const res = await fetch(`/chat/${chatId}/messages`);
-            if (!res.ok) return;
-            const data = await res.json();
-            messagesContainer.innerHTML = '';
-            data.forEach(msg => appendMessage(msg));
-        }
-
-        // Poll for new messages every 2s
-        setInterval(loadMessages, 2000);
-    </script>
 </body>
 
 </html>

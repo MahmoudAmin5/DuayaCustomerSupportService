@@ -6,7 +6,7 @@ use Illuminate\Support\Collection;
 
 interface MessageRepositoryInterface
 {
-    public function createMessage(array $data): Message;
+    public function createMessage(array $data): message;
     public function findMessageById(int $id): ?Message;
     public function getMessagesByChatId(int $chatId): Collection;
 
