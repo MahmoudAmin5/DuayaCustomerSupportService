@@ -9,7 +9,11 @@ class AgentSeeder extends Seeder
 {
     public function run(): void
     {
-        User::factory()->count(10)->create([
+        User::create([
+            'name' => 'Agent Test',
+            'email' => 'agent@example.com',
+            'phone' => '123-456-7890',
+            'password' => bcrypt('password'),
             'role' => 'agent',
         ]);
     }

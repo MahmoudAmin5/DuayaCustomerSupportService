@@ -14,11 +14,11 @@ class AgentAuthMiddleware
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-     public function handle($request, Closure $next)
+    public function handle($request, Closure $next)
     {
-        if (Auth::check() && Auth::user()->role === 'agent') {
-            return $next($request);
+        if (!Auth::guard('agent')->check() || optional(Auth::guard('agent')->user())->role !== 'agent') {
+            return redirect()->route('agent.login');
         }
-        abort(403, 'Unauthorized');
+        return $next($request);
     }
 }

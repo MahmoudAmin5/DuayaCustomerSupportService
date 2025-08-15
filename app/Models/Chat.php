@@ -9,6 +9,12 @@ class Chat extends Model
     protected $fillable = [
         'customer_id',
         'agent_id',
+        'is_active',
+    ];
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'is_active' => 'boolean',
     ];
     public function customer()
     {

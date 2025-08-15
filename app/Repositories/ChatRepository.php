@@ -43,7 +43,7 @@ class ChatRepository implements ChatRepositoryInterface
      }
       public function getChatById(int $chatId): ?Chat
      {
-         return Chat::find($chatId);
+         return Chat::with(['customer', 'agent'])->find($chatId);
      }
 
 }

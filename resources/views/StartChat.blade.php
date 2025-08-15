@@ -24,7 +24,7 @@
                         <form id="startChatForm" action="{{ route('startChat') }}" method="POST" >
                             @csrf
                             <div class="mb-3">
-                                <label for="name" class="form-label">Name (Optional)</label>
+                                <label for="name" class="form-label">Name</label>
                                 <input type="text" name="name" id="name" class="form-control"
                                     placeholder="Enter your name">
                             </div>
@@ -36,7 +36,7 @@
                             </div>
 
                             <div class="mb-3">
-                                <label for="message" class="form-label">Message *</label>
+                                <label for="message" class="form-label">Message</label>
                                 <textarea name="message" id="message" rows="4" class="form-control"
                                     placeholder="Type your message"></textarea>
                             </div>
