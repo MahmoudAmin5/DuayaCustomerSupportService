@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Repositories;
 
 use App\Models\Message;
@@ -11,14 +12,16 @@ class MessageRepository implements MessageRepositoryInterface
     {
         return Message::create($data)->load('sender');
     }
-     public function findMessageById(int $id): ?Message {
-         return Message::find($id);
-     }
-     public function getMessagesByChatId(int $chatId): Collection {
-         return Message::with('sender')->where('chat_id', $chatId)->latest()->get();
-     }
-     public function saveMessage(Message $message): bool {
-         return $message->save();
-     }
-
+    public function findMessageById(int $id): ?Message
+    {
+        return Message::find($id);
+    }
+    public function getMessagesByChatId(int $chatId): Collection
+    {
+        return Message::with('sender')->where('chat_id', $chatId)->get();
+    }
+    public function saveMessage(Message $message): bool
+    {
+        return $message->save();
+    }
 }

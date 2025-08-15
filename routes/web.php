@@ -23,7 +23,7 @@ Route::get('/chat/{chatId}', [ChatWebController::class, 'showAgentChat'])->name(
 
 
 
-Route::view('/startchat', 'StartChat');
+Route::view('/', 'StartChat');
 Route::post('/chat/start', [ChatWebController::class, 'startChat'])->name('startChat');
 
 Route::post('/chat/{chatId}/send', [ChatWebController::class, 'sendMessageAsAgent'])->name('chat.send');
