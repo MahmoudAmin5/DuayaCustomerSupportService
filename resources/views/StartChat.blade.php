@@ -36,7 +36,7 @@
                             </div>
 
                             <div class="mb-3">
-                                <label for="message" class="form-label">Message</label>
+                                <label for="message" class="form-label">Message </label>
                                 <textarea name="message" id="message" rows="4" class="form-control"
                                     placeholder="Type your message"></textarea>
                             </div>

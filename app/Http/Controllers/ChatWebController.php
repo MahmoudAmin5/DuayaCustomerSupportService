@@ -19,11 +19,13 @@ class ChatWebController extends Controller
         $this->chatRepo = $chatRepo;
     }
      public function startChat(Request $request)
-    {
+    { // Debugging line to check the request data
+        // dd($request->all());
         $validated = $request->validate([
             'name' => 'nullable|string|max:255',
             'phone' => 'required|string',
-        ]);
+            'message' => 'nullable|string',
+        ]);  // Debugging line to check the validated data
 
         $chat = $this->chatService->startChat($validated);
 

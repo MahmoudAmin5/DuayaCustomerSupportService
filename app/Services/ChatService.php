@@ -35,6 +35,7 @@ class ChatService implements ChatServiceInterface
     public function startChat(array $data): ?Chat
     {
         return DB::transaction(function () use ($data) {
+
             $customer = $this->userRepo->firstOrCreateByPhone($data['phone'], $data['name'] ?? 'Unknown Customer');
 
             // Check if customer already has an active chat
@@ -42,6 +43,7 @@ class ChatService implements ChatServiceInterface
             if ($existingChat) {
                 return $existingChat->load('messages'); // return existing chat with messages
             }
+
 
             // Get an available agent
             $agent = $this->agentRepo->getFirstAvailableAgent();
@@ -51,7 +53,6 @@ class ChatService implements ChatServiceInterface
 
             // Create chat
             $newChat = $this->chatRepo->findOrCreateChat($customer->id, $agent->id);
-
             // Store message via relationship (safe, clean)
             $newChat->messages()->create([
                 'sender_id' => $customer->id,
@@ -96,7 +97,7 @@ class ChatService implements ChatServiceInterface
         }
 
         $message = $this->messageRepo->createMessage($messageData);
-        broadcast(new MessageSent($message))->toOthers();
+       broadcast(new MessageSent($message))->toOthers();
 
         return $message;
     }
