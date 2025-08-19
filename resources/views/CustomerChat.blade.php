@@ -27,42 +27,40 @@
         </div>
 
         {{-- Messages --}}
-       <div id="messages" class="flex-1 overflow-y-auto p-4 bg-gray-50 space-y-3">
-    @foreach($messages as $message)
-        <div class="flex {{ $message->sender_id == $sender_id ? 'justify-end' : 'justify-start' }}">
-            <div
-                class="{{ $message->sender_id == $sender_id ? 'bg-blue-500 text-white' : 'bg-white text-gray-900 border' }} px-4 py-2 rounded-lg max-w-xs shadow">
+        <div id="messages" class="flex-1 overflow-y-auto p-4 bg-gray-50 space-y-3">
+            @foreach($messages as $message)
+                <div class="flex {{ $message->sender_id == $sender_id ? 'justify-end' : 'justify-start' }}">
+                    <div
+                        class="{{ $message->sender_id == $sender_id ? 'bg-blue-500 text-white' : 'bg-white text-gray-900 border' }} px-4 py-2 rounded-lg max-w-xs shadow">
 
-                {{-- نوع الرسالة --}}
-                @if($message->type === 'text')
-                    <p>{{ $message->content }}</p>
+                        {{-- نوع الرسالة --}}
+                        @if($message->type === 'text')
+                            <p>{{ $message->content }}</p>
 
-                @elseif($message->type === 'image')
-                    <img src="{{ asset('storage/' . $message->file_path) }}"
-                         alt="Image" class="max-w-[200px] rounded">
+                        @elseif($message->type === 'image')
+                            <img src="{{ asset('storage/' . $message->file_path) }}" alt="Image" class="max-w-[200px] rounded">
 
-                @elseif($message->type === 'file')
-                    <a href="{{ asset('storage/' . $message->file_path) }}"
-                       class="underline text-blue-200 hover:text-blue-300"
-                       target="_blank">
-                        📄 {{ $message->content ?? 'Download File' }}
-                    </a>
+                        @elseif($message->type === 'file')
+                            <a href="{{ asset('storage/' . $message->file_path) }}"
+                                class="underline text-blue-200 hover:text-blue-300" target="_blank">
+                                📄 {{ $message->content ?? 'Download File' }}
+                            </a>
 
-                @elseif($message->type === 'voice')
-                    <audio controls class="w-full">
-                        <source src="{{ asset('storage/' . $message->file_path) }}" type="audio/mpeg">
-                        متصفحك لا يدعم تشغيل الصوت
-                    </audio>
-                @endif
+                        @elseif($message->type === 'voice')
+                            <audio controls class="w-full">
+                                <source src="{{ asset('storage/' . $message->file_path) }}" type="audio/mpeg">
+                                متصفحك لا يدعم تشغيل الصوت
+                            </audio>
+                        @endif
 
-                {{-- الوقت --}}
-                <div class="text-xs opacity-70 mt-1">
-                    {{ $message->created_at->format('H:i') }}
+                        {{-- الوقت --}}
+                        <div class="text-xs opacity-70 mt-1">
+                            {{ $message->created_at->format('H:i') }}
+                        </div>
+                    </div>
                 </div>
-            </div>
+            @endforeach
         </div>
-    @endforeach
-</div>
 
 
         {{-- Form --}}
@@ -93,14 +91,14 @@
                 Send
             </button>
         </form>
-         <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        let messagesDiv = document.getElementById("messages");
-        if (messagesDiv) {
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        }
-    });
-</script>
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                let messagesDiv = document.getElementById("messages");
+                if (messagesDiv) {
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                }
+            });
+        </script>
 
         <script>
             const fileInput = document.getElementById('file-input');

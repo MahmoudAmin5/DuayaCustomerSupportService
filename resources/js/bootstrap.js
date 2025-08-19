@@ -12,12 +12,11 @@ window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 import Echo from "laravel-echo";
 import Pusher from "pusher-js";
 
-// خلي Pusher متاح كـ global (مهم مع Laravel Echo)
 window.Pusher = Pusher;
 
 window.Echo = new Echo({
     broadcaster: "pusher",
-    key: import.meta.env.VITE_PUSHER_APP_KEY,   // جاي من .env
+    key: import.meta.env.VITE_PUSHER_APP_KEY,
     cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
     forceTLS: true
 });

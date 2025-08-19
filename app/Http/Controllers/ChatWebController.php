@@ -57,6 +57,7 @@ class ChatWebController extends Controller
 
     public function sendMessageAsCustomer(Request $request)
     {
+        // dd($request->all());
 
         $validated = $request->validate([
             'chat_id' => 'required|exists:chats,id',

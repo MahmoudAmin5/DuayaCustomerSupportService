@@ -22,8 +22,17 @@
     <div class="bg-white shadow-lg rounded-lg w-full max-w-3xl flex flex-col h-[80vh]">
 
         {{-- Header --}}
-        <div class="bg-blue-500 text-white p-4 rounded-t-lg text-lg font-semibold">
-            Chat with Customer
+        <div class="bg-blue-500 text-white p-4 rounded-t-lg text-lg font-semibold flex justify-between items-center">
+            <span>Chat with Customer</span>
+
+            <form action="{{ route('agent.chat.close', ['chatId' => $chat->id]) }}" method="POST"
+                onsubmit="return confirm('Are you sure you want to close the chat?');">
+                @csrf
+                <button type="submit"
+                    class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-sm shadow">
+                    ⛔ Close Chat
+                </button>
+            </form>
         </div>
 
         {{-- Messages --}}
@@ -87,15 +96,13 @@
                 Send
             </button>
         </form>
-          <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        let messagesDiv = document.getElementById("messages");
-        if (messagesDiv) {
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        }
-    });
-</script>
         <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                let messagesDiv = document.getElementById("messages");
+                if (messagesDiv) {
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                }
+            });
             const fileInput = document.getElementById('file-input');
             const preview = document.getElementById('file-preview');
             const typeInput = document.getElementById('message-type');
@@ -138,57 +145,9 @@
                     contentInput.value = "";
                 }
             });
-        </script>
+            </script>
 
-        <script>
-            // ✅ Listen to Laravel Echo
-            window.Echo.channel('chat.{{ $chat->id }}')
-                .listen('MessageSent', (e) => {
-                    addMessageToUI(e.message);
-                });
-
-            // ✅ Send Message (AJAX)
-            document.getElementById('sendMessageForm').addEventListener('submit', async function (e) {
-                e.preventDefault();
-
-                let formData = new FormData(this);
-                if (formData.get('file').name) {
-                    formData.set('type', 'file'); // detect file
-                } else {
-                    formData.set('type', 'text'); // default text
-                }
-
-                let response = await fetch(this.action, {
-                    method: 'POST',
-                    headers: { "X-CSRF-TOKEN": "{{ csrf_token() }}" },
-                    body: formData
-                });
-
-                let data = await response.json();
-
-                if (data.success) {
-                    addMessageToUI(data.message); // show my own message instantly
-                    this.reset();
-                }
-            });
-
-            // ✅ Append message to UI
-            function addMessageToUI(message) {
-                let container = document.getElementById('messages');
-                let div = document.createElement('div');
-
-                if (message.type === "text") {
-                    div.innerHTML = `<strong>${message.sender_id}:</strong> ${message.content}`;
-                } else if (message.type === "image") {
-                    div.innerHTML = `<strong>${message.sender_id}:</strong> <img src="/storage/${message.file_path}" width="150">`;
-                } else {
-                    div.innerHTML = `<strong>${message.sender_id}:</strong> <a href="/storage/${message.file_path}" target="_blank">Download File</a>`;
-                }
-
-                container.appendChild(div);
-                container.scrollTop = container.scrollHeight; // auto scroll down
-            }
-        </script>
+        
 </body>
 
 </html>

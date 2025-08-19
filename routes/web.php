@@ -20,9 +20,6 @@ Route::prefix('agent')->name('agent.')->group(function () {
 Route::get('customer/chat/{chatId}', [ChatWebController::class, 'showCustomerChat'])->name('customer.show');
 Route::get('/chat/{chatId}', [ChatWebController::class, 'showAgentChat'])->name('chat.show');
 
-
-
-
 Route::view('/', 'StartChat');
 Route::post('/chat/start', [ChatWebController::class, 'startChat'])->name('startChat');
 

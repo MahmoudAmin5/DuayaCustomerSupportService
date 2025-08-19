@@ -21,7 +21,7 @@
 
                         <div id="alert-box" class="d-none"></div>
 
-                        <form id="startChatForm" action="{{ route('startChat') }}" method="POST" >
+                        <form id="startChatForm" action="{{ route('startChat') }}" method="POST">
                             @csrf
                             <div class="mb-3">
                                 <label for="name" class="form-label">Name</label>
@@ -52,7 +52,8 @@
         </div>
     </div>
 
-    {{-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    {{--
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function () {
             $('#startChatForm').on('submit', function (e) {
