@@ -38,29 +38,26 @@ class ChatService implements ChatServiceInterface
 
             $customer = $this->userRepo->firstOrCreateByPhone($data['phone'], $data['name'] ?? 'Unknown Customer');
 
-            // Check if customer already has an active chat
             $existingChat = $this->chatRepo->findActiveChatByCustomer($customer->id);
             if ($existingChat) {
-                return $existingChat->load('messages'); // return existing chat with messages
+                return $existingChat->load('messages');
             }
 
-
-            // Get an available agent
             $agent = $this->agentRepo->getFirstAvailableAgent();
             if (!$agent) {
-                return null; // No available agents
+                return null;
             }
 
-            // Create chat
+
             $newChat = $this->chatRepo->findOrCreateChat($customer->id, $agent->id);
-            // Store message via relationship (safe, clean)
+
             $newChat->messages()->create([
                 'sender_id' => $customer->id,
                 'chat_id' => $newChat->id,
-                'content' => $data['message'], // can be string, image, etc.
+                'content' => $data['message'],
             ]);
 
-            return $newChat->load('messages'); // optional: eager load messages
+            return $newChat->load('messages');
         });
     }
     public function sendMessage(array $data): ?Message
@@ -73,6 +70,7 @@ class ChatService implements ChatServiceInterface
         if (!in_array($data['sender_id'], [$chat->customer_id, $chat->agent_id])) {
             throw new \Exception('You are not a participant in this chat.');
         }
+        // dd($data);
 
         $messageData = [
             'chat_id'   => $data['chat_id'],
@@ -86,18 +84,23 @@ class ChatService implements ChatServiceInterface
             }
             $messageData['content'] = $data['content'];
         } elseif (in_array($messageData['type'], ['image', 'file'])) {
-            if (empty($data['file'])) {
+            if (empty($data['file_path'])) {
                 throw new \InvalidArgumentException('File is required for file/image messages.');
             }
-            $path = $data['file']->storeAs(
+
+            $path = $data['file_path']->storeAs(
                 'messages',
-                uniqid() . '.' . $data['file']->getClientOriginalExtension()
+                uniqid() . '.' . $data['file_path']->getClientOriginalExtension(),
+                'public' // مهم علشان يتخزن جوه storage/app/public
             );
             $messageData['file_path'] = $path;
         }
 
+
         $message = $this->messageRepo->createMessage($messageData);
-       broadcast(new MessageSent($message))->toOthers();
+
+
+        broadcast(new MessageSent($message))->toOthers();
 
         return $message;
     }

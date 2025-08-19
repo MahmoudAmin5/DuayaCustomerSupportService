@@ -18,7 +18,7 @@ class ChatWebController extends Controller
         $this->chatService = $chatService;
         $this->chatRepo = $chatRepo;
     }
-     public function startChat(Request $request)
+    public function startChat(Request $request)
     { // Debugging line to check the request data
         // dd($request->all());
         $validated = $request->validate([
@@ -36,41 +36,34 @@ class ChatWebController extends Controller
         return redirect()->route('customer.show', ['chatId' => $chat->id])->with(['chat' => $chat]);
     }
 
-    // public function getChatMessages(Request $request)
-    // {
-    //     $chatId = $request->route('chatId');
-    //     $messages = $this->chatService->getChatMessages($chatId);
-
-    //     if ($messages->isEmpty()) {
-    //         return abort(404, 'No messages found');
-    //     }
-    //     $messages = GetMessageResource::collection($messages);
-    //     return redirect()->route('chat.show', ['chatId' => $chatId])->with(['messages' => $messages]);
-    // }
     public function sendMessageAsAgent(Request $request)
     {
+
         $validated = $request->validate([
-            'chat_id' => 'required|exists:chats,id',
+            'chat_id'   => 'required|exists:chats,id',
             'sender_id' => 'required|exists:users,id',
-            'type'    => 'required|in:text,image,file',
-            'content' => 'nullable|string',
-            'file'    => 'nullable|file|max:20480', // max 20MB
+            'type'      => 'required|in:text,image,file',
+            'content'   => 'nullable|string',
+            'file_path' => 'nullable|file|max:20480', // max 20MB
         ]);
 
         $message = $this->chatService->sendMessage($validated);
+
         if (!$message) {
             return abort(500, 'Failed to send message');
         }
         return redirect()->route('chat.show', ['chatId' => $validated['chat_id']])->with(['message' => new GetMessageResource($message)]);
     }
+
     public function sendMessageAsCustomer(Request $request)
     {
+
         $validated = $request->validate([
             'chat_id' => 'required|exists:chats,id',
             'sender_id' => 'required|exists:users,id',
             'type'    => 'required|in:text,image,file',
             'content' => 'nullable|string',
-            'file'    => 'nullable|file|max:20480', // max 20MB
+            'file_path'    => 'nullable|file|max:20480', // max 20MB
         ]);
 
         $message = $this->chatService->sendMessage($validated);
@@ -95,19 +88,19 @@ class ChatWebController extends Controller
         ]);
     }
     public function showCustomerChat($chatId)
-{
-    $chat = $this->chatRepo->getChatById($chatId);
-    $messages = $this->chatService->getChatMessages($chatId);
-    $sender_id = DB::table('chats')
+    {
+        $chat = $this->chatRepo->getChatById($chatId);
+        $messages = $this->chatService->getChatMessages($chatId);
+        $sender_id = DB::table('chats')
             ->where('id', $chatId) // Assuming you want to get the sender_id for the chat
             ->value('customer_id'); // Default web guard for customers
-            // dd($sender_id);
+        // dd($sender_id);
 
-    return view('CustomerChat', compact('chat', 'messages', 'sender_id'));
-}
-public function closeChat($chatId)
-{
-    $chat = $this->chatRepo->deactivateChat($chatId);
-    return redirect()->route('agent.dashboard')->with('success', 'Chat closed successfully.');
-}
+        return view('CustomerChat', compact('chat', 'messages', 'sender_id'));
+    }
+    public function closeChat($chatId)
+    {
+        $chat = $this->chatRepo->deactivateChat($chatId);
+        return redirect()->route('agent.dashboard')->with('success', 'Chat closed successfully.');
+    }
 }
