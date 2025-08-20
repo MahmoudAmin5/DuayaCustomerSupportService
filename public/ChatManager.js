@@ -88,7 +88,7 @@ class ChatManager {
         if (this.userType === 'agent') {
             channelName = 'agent-channel';
         } else if (this.userType === 'customer') {
-            channelName = `private-customer-channel.${this.currentUserId}`;
+            channelName = `customer-channel.${this.currentUserId}`;
         }
 
         if (!channelName) {
@@ -335,7 +335,7 @@ class ChatManager {
     // Cleanup method
     destroy() {
         if (this.chatChannel) {
-            this.pusher.unsubscribe(`private-chat.${this.currentChatId}`);
+            this.pusher.unsubscribe(`chat.${this.currentChatId}`);
         }
         if (this.notificationChannel) {
             this.pusher.unsubscribe(this.getNotificationChannelName());
@@ -348,7 +348,7 @@ class ChatManager {
     getNotificationChannelName() {
         return this.userType === 'agent'
             ? 'agent-channel'
-            : `private-customer-channel.${this.currentUserId}`;
+            : `customer-channel.${this.currentUserId}`;
     }
 }
 
