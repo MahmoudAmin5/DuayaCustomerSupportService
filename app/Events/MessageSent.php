@@ -28,13 +28,18 @@ class MessageSent implements ShouldBroadcast
 
     public function broadcastWith(): array
     {
-        return [
-            'id' => $this->message->id,
-            'chat_id' => $this->message->chat_id,
+         return [
+
+            'id'        => $this->message->id,
+            'chat_id'   => $this->message->chat_id,
+            'type'      => $this->message->type,
             'sender_id' => $this->message->sender_id,
-            'content' => $this->message->content,
-            'created_at' => $this->message->created_at->toDateTimeString(),
-            'time' => $this->message->created_at->format('H:i'),
-        ];
+            'content'   => $this->message->content,
+            'time'      => $this->message->created_at->format('H:i'),
+            'created_at'=> $this->message->created_at->toDateTimeString(),
+    ];
+    }
+    public function broadcastAs(): string{
+        return 'Message.Sent';
     }
 }

@@ -50,10 +50,29 @@ class ChatWebController extends Controller
         $message = $this->chatService->sendMessage($validated);
 
         if (!$message) {
-            return abort(500, 'Failed to send message');
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => false,
+                'error'   => 'Failed to send message',
+            ], 500);
         }
-        return redirect()->route('chat.show', ['chatId' => $validated['chat_id']])->with(['message' => new GetMessageResource($message)]);
+
+        return back()->withErrors(['error' => 'Failed to send message']);
     }
+
+    // If it's AJAX (like fetch/axios)
+    if ($request->expectsJson() || $request->ajax()) {
+        return response()->json([
+            'success' => true,
+            'message' => new GetMessageResource($message),
+        ]);
+    }
+
+    // If it's normal Blade form submission
+    return redirect()
+        ->route('chat.show', ['chatId' => $validated['chat_id']])
+        ->with(['message' => new GetMessageResource($message)]);
+}
 
     public function sendMessageAsCustomer(Request $request)
     {
@@ -70,8 +89,19 @@ class ChatWebController extends Controller
         $message = $this->chatService->sendMessage($validated);
         if (!$message) {
             return abort(500, 'Failed to send message');
+
         }
-        return redirect()->route('customer.show', ['chatId' => $validated['chat_id']])->with(['message' => new GetMessageResource($message)]);
+        if ($request->expectsJson() || $request->ajax()) {
+        return response()->json([
+            'success' => true,
+            'message' => new GetMessageResource($message),
+        ]);
+    }
+
+    // If it's normal Blade form submission
+    return redirect()
+        ->route('customer.show', ['chatId' => $validated['chat_id']])
+        ->with(['message' => new GetMessageResource($message)]);
     }
     public function showAgentChat($chatId)
     {

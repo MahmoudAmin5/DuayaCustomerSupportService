@@ -72,7 +72,7 @@ class ChatService implements ChatServiceInterface
         }
         // dd($data);
 
-        
+
 
         $messageData = [
             'chat_id'   => $data['chat_id'],
@@ -100,10 +100,7 @@ class ChatService implements ChatServiceInterface
 
 
         $message = $this->messageRepo->createMessage($messageData);
-
-
-        broadcast(new MessageSent($message))->toOthers();
-
+       broadcast(new MessageSent($message))->toOthers();
         return $message;
     }
     public function getChatMessages(int $chatId): Collection

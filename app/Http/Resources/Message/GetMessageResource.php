@@ -17,18 +17,19 @@ class GetMessageResource extends JsonResource
         return [
             'id' => $this->id,
             'chat_id' => $this->chat_id,
+            'sender_id' => $this->sender_id,
             'type' => $this->type,
             'content' => $this->content,
             'file' => $this->when($this->type === 'file', $this->file), // Include file only if type is 'file'
             'created_at' => $this->created_at->diffForHumans(),
             'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),
-            'sender' => $this->whenLoaded('sender', function () {
-                return [
-                    'sender_id' => $this->sender->id,
-                    'employee_name' => $this->sender->name,
-                    'phone' => $this->sender->phone,
-                ];
-            }),
+            // 'sender' => $this->whenLoaded('sender', function () {
+            //     return [
+            //         'sender_id' => $this->sender->id,
+            //         'employee_name' => $this->sender->name,
+            //         'phone' => $this->sender->phone,
+            //     ];
+            // }),
         ];
     }
 }

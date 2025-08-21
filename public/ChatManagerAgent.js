@@ -65,22 +65,24 @@ class ChatManager {
     }
 
     setupChatChannel() {
-        if (!this.currentChatId) {
-            console.error('Chat ID not found');
-            return;
-        }
-
-        // Subscribe to private chat channel
-        this.chatChannel = this.pusher.subscribe(`agent-channel`);
-
-        // Listen for new messages
-        this.chatChannel.bind('message.sent', (data) => {
-            console.log('New message received:', data);
-            this.handleNewMessage(data);
-        });
-
-        console.log(`Subscribed to chat channel: agent-channel.${this.currentChatId}`);
+    if (!this.currentChatId) {
+        console.error('Chat ID not found');
+        return;
     }
+
+    // ✅ subscribe to chat-specific channel
+    this.chatChannel = this.pusher.subscribe(`chat.${this.currentChatId}`);
+
+    // ✅ listen for the same event name you broadcast
+    this.chatChannel.bind('Message.Sent', (data) => {
+        console.log('New message received:', data);
+        console.log('Message data:', data.content);
+        this.handleNewMessage(data); // payload is {message: {...}}
+    });
+
+    console.log(`Subscribed to chat channel: chat.${this.currentChatId}`);
+}
+
 
     setupNotificationChannel() {
         let channelName;
@@ -109,6 +111,7 @@ class ChatManager {
     }
 
     handleNewMessage(messageData) {
+        console.log('New message received:', messageData);
         // Don't show message if it's from current user
         if (messageData.sender_id == this.currentUserId) {
             return;
@@ -181,6 +184,7 @@ class ChatManager {
                 </div>
             </div>
         `;
+
 
         return messageDiv;
     }
@@ -271,12 +275,18 @@ class ChatManager {
 
             const result = await response.json();
 
-            if (result.success) {
-                // Clear form
-                if (textarea) textarea.value = '';
-                document.getElementById('file-input').value = '';
-                document.getElementById('file-preview').innerHTML = '';
-                document.getElementById('message-type').value = 'text';
+           if (result.success) {
+    // Clear form
+    if (textarea) textarea.value = '';
+    document.getElementById('file-input').value = '';
+    document.getElementById('file-preview').innerHTML = '';
+    document.getElementById('message-type').value = 'text';
+
+    // ✅ append immediately
+    this.appendMessageToChat(result.message);
+
+    this.scrollToBottom();
+
 
                 // Show success message briefly
                 this.showSuccessMessage('Message sent successfully');
