@@ -51,50 +51,6 @@
             </div>
         </div>
     </div>
-
-    {{--
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        $(document).ready(function () {
-            $('#startChatForm').on('submit', function (e) {
-                e.preventDefault();
-
-                $('#btnText').text('Starting...');
-                $('#loadingSpinner').removeClass('d-none');
-                $('#alert-box').addClass('d-none').removeClass('alert-success alert-danger').empty();
-
-                $.ajax({
-                    url: "{{ route('start.chat') }}", // Make sure you have this named route in web.php
-                    type: "POST",
-                    data: $(this).serialize(),
-                    headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                    },
-                    success: function (response) {
-                        $('#alert-box')
-                            .removeClass('d-none')
-                            .addClass('alert alert-success')
-                            .html('<strong>Chat started!</strong> Your chat ID: ' + response.chat.id);
-                        $('#startChatForm')[0].reset();
-                    },
-                    error: function (xhr) {
-                        let errorMsg = "Something went wrong.";
-                        if (xhr.responseJSON && xhr.responseJSON.message) {
-                            errorMsg = xhr.responseJSON.message;
-                        }
-                        $('#alert-box')
-                            .removeClass('d-none')
-                            .addClass('alert alert-danger')
-                            .text(errorMsg);
-                    },
-                    complete: function () {
-                        $('#btnText').text('Start Chat');
-                        $('#loadingSpinner').addClass('d-none');
-                    }
-                });
-            });
-        });
-    </script> --}}
 </body>
 
 </html>
