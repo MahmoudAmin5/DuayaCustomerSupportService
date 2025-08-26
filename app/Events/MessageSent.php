@@ -36,6 +36,7 @@ class MessageSent implements ShouldBroadcast
             'sender_id' => $this->message->sender_id,
             'content'   => $this->message->content,
             'time'      => $this->message->created_at->format('H:i'),
+            'file_path' => $this->message->file_path,
             'created_at'=> $this->message->created_at->toDateTimeString(),
     ];
     }

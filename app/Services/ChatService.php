@@ -62,6 +62,7 @@ class ChatService implements ChatServiceInterface
     }
     public function sendMessage(array $data): ?Message
     {
+        ds($data);
         $chat = $this->chatRepo->getChatById($data['chat_id']);
         if (!$chat) {
             throw new \Exception('Chat not found.');
@@ -85,7 +86,7 @@ class ChatService implements ChatServiceInterface
                 throw new \InvalidArgumentException('Content is required for text messages.');
             }
             $messageData['content'] = $data['content'];
-        } elseif (in_array($messageData['type'], ['image', 'file'])) {
+        } elseif (in_array($messageData['type'], ['image', 'file' , 'voice'])) {
             if (empty($data['file_path'])) {
                 throw new \InvalidArgumentException('File is required for file/image messages.');
             }
@@ -95,11 +96,14 @@ class ChatService implements ChatServiceInterface
                 uniqid() . '.' . $data['file_path']->getClientOriginalExtension(),
                 'public' // مهم علشان يتخزن جوه storage/app/public
             );
+            ds('path file: ' . $path);
             $messageData['file_path'] = $path;
         }
 
 
         $message = $this->messageRepo->createMessage($messageData);
+        ds($message);
+
        broadcast(new MessageSent($message))->toOthers();
         return $message;
     }

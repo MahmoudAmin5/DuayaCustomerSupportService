@@ -38,11 +38,11 @@ class ChatWebController extends Controller
 
     public function sendMessageAsAgent(Request $request)
     {
-
+        //dd($request->all());
         $validated = $request->validate([
             'chat_id'   => 'required|exists:chats,id',
             'sender_id' => 'required|exists:users,id',
-            'type'      => 'required|in:text,image,file',
+            'type'      => 'required|in:text,image,file,voice',
             'content'   => 'nullable|string',
             'file_path' => 'nullable|file|max:20480', // max 20MB
         ]);
@@ -81,7 +81,7 @@ class ChatWebController extends Controller
         $validated = $request->validate([
             'chat_id' => 'required|exists:chats,id',
             'sender_id' => 'required|exists:users,id',
-            'type'    => 'required|in:text,image,file',
+            'type'    => 'required|in:text,image,file,voice',
             'content' => 'nullable|string',
             'file_path'    => 'nullable|file|max:20480', // max 20MB
         ]);

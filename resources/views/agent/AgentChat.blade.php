@@ -11,7 +11,7 @@
 
     <meta name="pusher-key" content="{{ config('broadcasting.connections.pusher.key') }}" />
     <meta name="pusher-cluster" content="{{ config('broadcasting.connections.pusher.options.cluster', 'mt1') }}" />
-    <meta name="user-type" content="agent" />
+    <meta name="user-type" content="customer" />
     <meta name="user-id" content="{{ Auth::guard('agent')->id() }}" />
 
     {{-- Laravel CSRF Token --}}

@@ -41,7 +41,7 @@ class ChatRepository implements ChatRepositoryInterface
      {
         return Chat::where('id', $chatId)->update(['is_active' => 0]);
      }
-      public function getChatById(int $chatId): ?Chat
+      public function getChatById( $chatId): ?Chat
      {
          return Chat::with(['customer', 'agent'])->find($chatId);
      }

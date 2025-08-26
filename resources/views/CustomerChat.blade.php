@@ -181,14 +181,16 @@
                                             </div>
                                         </a>
 
-                                    @elseif($message->type === 'voice')
+                                    @elseif($message->type === 'voice' && $message->file_path)
                                         <div class="bg-gray-100 rounded-lg p-3">
                                             <audio controls class="w-full">
-                                                <source src="{{ asset('storage/' . $message->file_path) }}" type="audio/mpeg">
+                                                {{-- <source src="{{ asset('storage/' . $message->file_path) }}" type="audio/mpeg"> --}}
                                                 <source src="{{ asset('storage/' . $message->file_path) }}" type="audio/wav">
                                                 Your browser does not support audio playback
                                             </audio>
                                         </div>
+                                    @else
+                                        <p class="text-sm leading-relaxed">Unsupported message type.</p>
                                     @endif
                                 </div>
 

@@ -228,74 +228,78 @@ class ChatManager {
     }
 
     setupFormSubmission() {
-        const form = document.getElementById('chat-form');
+    const form = document.getElementById('chat-form');
+    if (!form) return;
 
-        if (!form) return;
+    let sending = false;
 
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.submitMessage(form);
-        });
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (sending) return; // prevent duplicate
+        sending = true;
 
-        // Handle Enter key for textarea
-        const textarea = document.getElementById('content-input');
-        if (textarea) {
-            textarea.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
+        await this.submitMessage(form);
+
+        sending = false;
+    });
+
+    const textarea = document.getElementById('content-input');
+    if (textarea) {
+        textarea.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                if (!sending) {
                     form.dispatchEvent(new Event('submit'));
                 }
-            });
-        }
+            }
+        });
     }
+}
 
     async submitMessage(form) {
-        const formData = new FormData(form);
-        const submitBtn = form.querySelector('button[type="submit"]');
-        const textarea = document.getElementById('content-input');
+    const formData = new FormData(form);
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const textarea = document.getElementById('content-input');
 
-        // Disable submit button
-        if (submitBtn) {
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Sending...';
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Sending...';
+    }
+
+    try {
+        const response = await fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            if (textarea) textarea.value = '';
+            document.getElementById('file-input').value = '';
+            document.getElementById('file-preview').innerHTML = '';
+            document.getElementById('message-type').value = 'text';
+
+            this.appendMessageToChat(result.message);
+            this.scrollToBottom();
+            this.showSuccessMessage('Message sent successfully');
+        } else {
+            throw new Error(result.error || 'Failed to send message');
         }
-
-        try {
-            const response = await fetch(form.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
-                }
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                // Clear form
-                if (textarea) textarea.value = '';
-                document.getElementById('file-input').value = '';
-                document.getElementById('file-preview').innerHTML = '';
-                document.getElementById('message-type').value = 'text';
-
-                // Show success message briefly
-                this.showSuccessMessage('Message sent successfully');
-
-            } else {
-                throw new Error(result.error || 'Failed to send message');
-            }
-        } catch (error) {
-            console.error('Error sending message:', error);
-            this.showErrorMessage('Failed to send message: ' + error.message);
-        } finally {
-            // Re-enable submit button
-            if (submitBtn) {
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Send';
-            }
+    } catch (error) {
+        console.error('Error sending message:', error);
+        this.showErrorMessage('Failed to send message: ' + error.message);
+    } finally {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Send';
         }
     }
+}
 
     showSuccessMessage(message) {
         this.showTemporaryMessage(message, 'success');
@@ -381,3 +385,4 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
