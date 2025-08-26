@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <title>customer Chat</title>
@@ -47,6 +48,7 @@
                 opacity: 0;
                 transform: translateY(10px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -58,8 +60,16 @@
         }
 
         @keyframes typing {
-            0%, 60%, 100% { transform: translateY(0); }
-            30% { transform: translateY(-10px); }
+
+            0%,
+            60%,
+            100% {
+                transform: translateY(0);
+            }
+
+            30% {
+                transform: translateY(-10px);
+            }
         }
 
         .hover-lift {
@@ -76,8 +86,15 @@
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
         }
 
         .scrollbar-hide::-webkit-scrollbar {
@@ -109,11 +126,13 @@
                 <div class="flex items-center space-x-4">
                     <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
                         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
+                            </path>
                         </svg>
                     </div>
                     <div>
-                        <h2 class="text-xl font-semibold">{{ $chat->agent ? $chat->agent ->name : 'Customer' }}</h2>
+                        <h2 class="text-xl font-semibold">{{ $chat->agent ? $chat->agent->name : 'Customer' }}</h2>
                         <div class="flex items-center space-x-2 text-sm opacity-90">
                             <div id="status-dot" class="w-2 h-2 bg-green-400 rounded-full connection-pulse"></div>
                             <span id="status-text">Online</span>
@@ -130,12 +149,14 @@
                     </div>
 
                     <!-- Close Chat Button -->
-                     <form action="{{ route('agent.chat.close', ['chatId' => $chat->id]) }}" method="POST"
+                    <form action="{{ route('agent.chat.close', ['chatId' => $chat->id]) }}" method="POST"
                         onsubmit="return confirm('Are you sure you want to close the chat?');">
                         @csrf
-                        {{-- <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 hover-lift">
+                        {{-- <button type="submit"
+                            class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 hover-lift">
                             <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12"></path>
                             </svg>
                             Close Chat
                         </button> --}}
@@ -144,35 +165,44 @@
             </div>
 
             <!-- Messages Container -->
-            <div id="messages" class="flex-1 overflow-y-auto p-6 bg-gradient-to-b from-gray-50 to-white scrollbar-hide">
+            <div id="messages"
+                class="flex-1 overflow-y-auto p-6 bg-gradient-to-b from-gray-50 to-white scrollbar-hide-">
                 <div class="space-y-4">
                     @foreach($messages as $message)
-                        <div class="flex {{ $message->sender_id == $sender_id ? 'justify-end' : 'justify-start' }} message-bubble">
+                        <div
+                            class="flex {{ $message->sender_id == $sender_id ? 'justify-end' : 'justify-start' }} message-bubble">
                             <div class="max-w-xs lg:max-w-md">
                                 <!-- Message Content -->
-                                <div class="{{ $message->sender_id == $sender_id ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-l-2xl rounded-tr-2xl' : 'bg-white text-gray-800 border border-gray-200 rounded-r-2xl rounded-tl-2xl' }} px-5 py-3 shadow-lg">
+                                <div
+                                    class="{{ $message->sender_id == $sender_id ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-l-2xl rounded-tr-2xl' : 'bg-white text-gray-800 border border-gray-200 rounded-r-2xl rounded-tl-2xl' }} px-5 py-3 shadow-lg">
                                     @if($message->type === 'text')
                                         <p class="text-sm leading-relaxed">{{ $message->content }}</p>
 
                                     @elseif($message->type === 'image')
                                         <div class="relative group">
                                             <img src="{{ asset('storage/' . $message->file_path) }}" alt="Image"
-                                                 class="max-w-[250px] rounded-lg cursor-pointer transition-transform group-hover:scale-105"
-                                                 onclick="openImageModal('{{ asset('storage/' . $message->file_path) }}')">
-                                            <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded-lg transition-all duration-200 flex items-center justify-center">
-                                                <svg class="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                                class="max-w-[250px] rounded-lg cursor-pointer transition-transform group-hover:scale-105"
+                                                onclick="openImageModal('{{ asset('storage/' . $message->file_path) }}')">
+                                            <div
+                                                class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded-lg transition-all duration-200 flex items-center justify-center">
+                                                <svg class="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                                                 </svg>
                                             </div>
                                         </div>
 
                                     @elseif($message->type === 'file')
                                         <a href="{{ asset('storage/' . $message->file_path) }}"
-                                           class="flex items-center space-x-3 hover:opacity-80 transition-opacity"
-                                           target="_blank" download>
+                                            class="flex items-center space-x-3 hover:opacity-80 transition-opacity"
+                                            target="_blank" download>
                                             <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z">
+                                                    </path>
                                                 </svg>
                                             </div>
                                             <div>
@@ -182,12 +212,28 @@
                                         </a>
 
                                     @elseif($message->type === 'voice' && $message->file_path)
-                                        <div class="bg-gray-100 rounded-lg p-3">
-                                            <audio controls class="w-full">
-                                                {{-- <source src="{{ asset('storage/' . $message->file_path) }}" type="audio/mpeg"> --}}
+                                        @php
+                                            $fileExtension = pathinfo($message->file_path, PATHINFO_EXTENSION);
+                                            $mimeTypes = [
+                                                'mp3' => 'audio/mpeg',
+                                                'wav' => 'audio/wav',
+                                                'ogg' => 'audio/ogg',
+                                                'm4a' => 'audio/mp4'
+                                            ];
+                                            $mimeType = $mimeTypes[strtolower($fileExtension)] ?? 'audio/mpeg';
+                                        @endphp
+                                        <div style="width: 17pc" class="bg-gray-100 rounded-lg ">
+                                            <audio controls class="w-full" preload="metadata">
+                                                <source src="{{ asset('storage/' . $message->file_path) }}"
+                                                    type="{{ $mimeType }}">
+                                                <!-- Fallback for different browsers -->
+                                                <source src="{{ asset('storage/' . $message->file_path) }}" type="audio/mpeg">
                                                 <source src="{{ asset('storage/' . $message->file_path) }}" type="audio/wav">
                                                 Your browser does not support audio playback
                                             </audio>
+
+                                            <!-- Debug info (remove in production) -->
+
                                         </div>
                                     @else
                                         <p class="text-sm leading-relaxed">Unsupported message type.</p>
@@ -195,13 +241,16 @@
                                 </div>
 
                                 <!-- Message Info -->
-                                <div class="flex {{ $message->sender_id == $sender_id ? 'justify-end' : 'justify-start' }} mt-1 px-1">
+                                <div
+                                    class="flex {{ $message->sender_id == $sender_id ? 'justify-end' : 'justify-start' }} mt-1 px-1">
                                     <div class="flex items-center space-x-2 text-xs text-gray-500">
                                         <span>{{ $message->created_at->format('H:i') }}</span>
                                         @if($message->sender_id == $sender_id)
                                             <span id="message-status-{{ $message->id }}" class="message-status text-blue-500">
                                                 <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                                    <path fill-rule="evenodd"
+                                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                        clip-rule="evenodd"></path>
                                                 </svg>
                                             </span>
                                         @endif
@@ -217,8 +266,10 @@
                             <div class="flex items-center space-x-2">
                                 <div class="flex space-x-1">
                                     <div class="w-2 h-2 bg-gray-400 rounded-full typing-animation"></div>
-                                    <div class="w-2 h-2 bg-gray-400 rounded-full typing-animation" style="animation-delay: 0.2s"></div>
-                                    <div class="w-2 h-2 bg-gray-400 rounded-full typing-animation" style="animation-delay: 0.4s"></div>
+                                    <div class="w-2 h-2 bg-gray-400 rounded-full typing-animation"
+                                        style="animation-delay: 0.2s"></div>
+                                    <div class="w-2 h-2 bg-gray-400 rounded-full typing-animation"
+                                        style="animation-delay: 0.4s"></div>
                                 </div>
                                 <span class="text-xs text-gray-500 ml-2">typing...</span>
                             </div>
@@ -237,12 +288,14 @@
 
                 <!-- Enhanced File Preview -->
                 <div id="file-preview-container" class="hidden p-4 border-b bg-gray-50">
-                    <div class="flex items-center justify-between bg-white rounded-lg p-3 border-2 border-dashed border-blue-200">
+                    <div
+                        class="flex items-center justify-between bg-white rounded-lg p-3 border-2 border-dashed border-blue-200">
                         <div id="file-preview" class="flex items-center space-x-3"></div>
                         <button type="button" onclick="clearFileSelection()"
-                                class="text-gray-400 hover:text-red-500 transition-colors p-2 rounded-full hover:bg-red-50">
+                            class="text-gray-400 hover:text-red-500 transition-colors p-2 rounded-full hover:bg-red-50">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12"></path>
                             </svg>
                         </button>
                     </div>
@@ -265,13 +318,15 @@
                         <div class="flex items-center space-x-2">
                             <!-- File Upload -->
                             <input type="file" name="file_path" id="file-input" class="hidden"
-                                   accept="image/*,audio/*,.pdf,.doc,.docx,.txt,.zip,.rar">
+                                accept="image/*,audio/*,.pdf,.doc,.docx,.txt,.zip,.rar">
 
                             <button type="button" onclick="document.getElementById('file-input').click()"
                                 class="w-10 h-10 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-full flex items-center justify-center transition-all duration-200 hover-lift"
                                 title="Attach file">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13">
+                                    </path>
                                 </svg>
                             </button>
 
@@ -280,7 +335,9 @@
                                 class="w-10 h-10 bg-red-100 hover:bg-red-200 text-red-600 rounded-full flex items-center justify-center transition-all duration-200 hover-lift"
                                 title="Record voice message">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z">
+                                    </path>
                                 </svg>
                             </button>
 
@@ -288,7 +345,8 @@
                             <button type="submit" id="send-btn"
                                 class="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-full flex items-center justify-center transition-all duration-200 hover-lift disabled:opacity-50 disabled:cursor-not-allowed">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
                                 </svg>
                             </button>
                         </div>
@@ -305,7 +363,8 @@
             <button onclick="closeImageModal()"
                 class="absolute -top-4 -right-4 w-10 h-10 bg-white text-gray-800 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors shadow-lg">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
                 </svg>
             </button>
         </div>
@@ -330,7 +389,7 @@
                 messagesDiv.scrollTop = messagesDiv.scrollHeight;
             }
         }
-         function initializeFileHandling() {
+        function initializeFileHandling() {
             const fileInput = document.getElementById('file-input');
             const preview = document.getElementById('file-preview');
             const previewContainer = document.getElementById('file-preview-container');
@@ -504,7 +563,7 @@
             const textarea = document.getElementById('content-input');
             const charCount = document.getElementById('char-count');
 
-            textarea.addEventListener('input', function() {
+            textarea.addEventListener('input', function () {
                 const count = this.value.length;
                 charCount.textContent = count;
 
@@ -527,7 +586,7 @@
             let audioChunks = [];
             let isRecording = false;
 
-            recordBtn.addEventListener('click', function() {
+            recordBtn.addEventListener('click', function () {
                 if (isRecording) {
                     stopRecording();
                 } else {
@@ -617,14 +676,14 @@
         }
 
         // Close modal when clicking outside
-        document.getElementById('image-modal').addEventListener('click', function(e) {
+        document.getElementById('image-modal').addEventListener('click', function (e) {
             if (e.target === this) {
                 closeImageModal();
             }
         });
 
         // Enhanced form validation and submission
-        document.getElementById('chat-form').addEventListener('submit', function(e) {
+        document.getElementById('chat-form').addEventListener('submit', function (e) {
             const contentInput = document.getElementById('content-input');
             const fileInput = document.getElementById('file-input');
             const sendBtn = document.getElementById('send-btn');
@@ -690,7 +749,7 @@
         }
 
         // Enhanced keyboard shortcuts
-        document.addEventListener('keydown', function(e) {
+        document.addEventListener('keydown', function (e) {
             if (e.key === 'Enter' && !e.shiftKey) {
                 const activeElement = document.activeElement;
                 if (activeElement && activeElement.id === 'content-input') {
@@ -711,5 +770,7 @@
         setTimeout(() => {
             document.getElementById('content-input').focus();
         }, 500);
-        </script>
-</body></html>
+    </script>
+</body>
+
+</html>

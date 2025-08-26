@@ -1,5 +1,7 @@
 <?php
+
 namespace App\Repositories;
+
 use App\Models\Chat;
 use App\Models\User;
 use App\Repositories\Interfaces\ChatRepositoryInterface;
@@ -29,21 +31,22 @@ class ChatRepository implements ChatRepositoryInterface
             ->first();
     }
 
-    public function getChatsByAgent(int $agentId): Collection{
+    public function getChatsByAgent(int $agentId): Collection
+    {
         return Chat::where('agent_id', $agentId)
             ->latest()
             ->get();
     }
-     public function save(Chat $chat): bool{
+    public function save(Chat $chat): bool
+    {
         return $chat->save();
-     }
-     public function deactivateChat(int $chatId): bool
-     {
+    }
+    public function deactivateChat(int $chatId): bool
+    {
         return Chat::where('id', $chatId)->update(['is_active' => 0]);
-     }
-      public function getChatById( $chatId): ?Chat
-     {
-         return Chat::with(['customer', 'agent'])->find($chatId);
-     }
-
+    }
+    public function getChatById($chatId): ?Chat
+    {
+        return Chat::with(['customer', 'agent'])->find($chatId);
+    }
 }

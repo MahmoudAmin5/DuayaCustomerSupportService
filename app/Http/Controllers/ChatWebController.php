@@ -44,35 +44,35 @@ class ChatWebController extends Controller
             'sender_id' => 'required|exists:users,id',
             'type'      => 'required|in:text,image,file,voice',
             'content'   => 'nullable|string',
-            'file_path' => 'nullable|file|max:20480', // max 20MB
+            'file_path' => 'nullable|file', // max 20MB
         ]);
 
         $message = $this->chatService->sendMessage($validated);
 
         if (!$message) {
-        if ($request->expectsJson() || $request->ajax()) {
-            return response()->json([
-                'success' => false,
-                'error'   => 'Failed to send message',
-            ], 500);
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'error'   => 'Failed to send message',
+                ], 500);
+            }
+
+            return back()->withErrors(['error' => 'Failed to send message']);
         }
 
-        return back()->withErrors(['error' => 'Failed to send message']);
-    }
+        // If it's AJAX (like fetch/axios)
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => new GetMessageResource($message),
+            ]);
+        }
 
-    // If it's AJAX (like fetch/axios)
-    if ($request->expectsJson() || $request->ajax()) {
-        return response()->json([
-            'success' => true,
-            'message' => new GetMessageResource($message),
-        ]);
+        // If it's normal Blade form submission
+        return redirect()
+            ->route('chat.show', ['chatId' => $validated['chat_id']])
+            ->with(['message' => new GetMessageResource($message)]);
     }
-
-    // If it's normal Blade form submission
-    return redirect()
-        ->route('chat.show', ['chatId' => $validated['chat_id']])
-        ->with(['message' => new GetMessageResource($message)]);
-}
 
     public function sendMessageAsCustomer(Request $request)
     {
@@ -83,25 +83,24 @@ class ChatWebController extends Controller
             'sender_id' => 'required|exists:users,id',
             'type'    => 'required|in:text,image,file,voice',
             'content' => 'nullable|string',
-            'file_path'    => 'nullable|file|max:20480', // max 20MB
+            'file_path'    => 'nullable|file', // max 20MB
         ]);
 
         $message = $this->chatService->sendMessage($validated);
         if (!$message) {
             return abort(500, 'Failed to send message');
-
         }
         if ($request->expectsJson() || $request->ajax()) {
-        return response()->json([
-            'success' => true,
-            'message' => new GetMessageResource($message),
-        ]);
-    }
+            return response()->json([
+                'success' => true,
+                'message' => new GetMessageResource($message),
+            ]);
+        }
 
-    // If it's normal Blade form submission
-    return redirect()
-        ->route('customer.show', ['chatId' => $validated['chat_id']])
-        ->with(['message' => new GetMessageResource($message)]);
+        // If it's normal Blade form submission
+        return redirect()
+            ->route('customer.show', ['chatId' => $validated['chat_id']])
+            ->with(['message' => new GetMessageResource($message)]);
     }
     public function showAgentChat($chatId)
     {
