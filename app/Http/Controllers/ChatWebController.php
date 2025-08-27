@@ -44,7 +44,7 @@ class ChatWebController extends Controller
             'sender_id' => 'required|exists:users,id',
             'type'      => 'required|in:text,image,file,voice',
             'content'   => 'nullable|string',
-            'file_path' => 'nullable|file', // max 20MB
+            'file_path' => 'nullable|file|max:20480', // max 20MB
         ]);
 
         $message = $this->chatService->sendMessage($validated);
