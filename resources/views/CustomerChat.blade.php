@@ -372,8 +372,20 @@
 
     <!-- Notification Container -->
     <div id="notification-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
+    <audio id="notificationSound" src="{{ asset('sounds/notification.mp3') }}" preload="auto"></audio>
 
     <script>
+         window.notificationManager = {
+            playNotificationSound() {
+                const sound = document.getElementById('notificationSound');
+                if (sound) {
+                    sound.currentTime = 0; // Restart from beginning
+                    sound.play().catch(err => {
+                        console.warn("Autoplay blocked:", err);
+                    });
+                }
+            }
+        };
         // Enhanced chat functionality
         document.addEventListener("DOMContentLoaded", function () {
             scrollToBottom();
