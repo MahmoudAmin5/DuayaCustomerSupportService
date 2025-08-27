@@ -232,6 +232,13 @@
                                             <!-- Debug info (remove in production) -->
 
                                         </div>
+                                    @elseif($message->type === 'video' && $message->file_path)
+                                        <div class="bg-gray-100 rounded-lg">
+                                            <video controls class="w-full max-h-64 rounded-lg">
+                                                <source src="{{ asset('storage/' . $message->file_path) }}" type="video/mp4">
+                                                Your browser does not support video playback.
+                                            </video>
+                                        </div>
                                     @else
                                         <p class="text-sm leading-relaxed">Unsupported message type.</p>
                                     @endif
@@ -315,7 +322,7 @@
                         <div class="flex items-center space-x-2">
                             <!-- File Upload -->
                             <input type="file" name="file_path" id="file-input" class="hidden"
-                                accept="image/*,audio/*,.pdf,.doc,.docx,.txt,.zip,.rar">
+                                accept="image/*,audio/*,video/*,.pdf,.doc,.docx,.txt,.zip,.rar">
 
                             <button type="button" onclick="document.getElementById('file-input').click()"
                                 class="w-10 h-10 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-full flex items-center justify-center transition-all duration-200 hover-lift"
@@ -402,91 +409,98 @@
         }
 
         function initializeFileHandling() {
-            const fileInput = document.getElementById('file-input');
-            const preview = document.getElementById('file-preview');
-            const previewContainer = document.getElementById('file-preview-container');
-            const typeInput = document.getElementById('message-type');
-            const contentInput = document.getElementById('content-input');
+    const fileInput = document.getElementById('file-input');
+    const preview = document.getElementById('file-preview');
+    const previewContainer = document.getElementById('file-preview-container');
+    const typeInput = document.getElementById('message-type');
+    const contentInput = document.getElementById('content-input');
 
-            fileInput.addEventListener('change', function () {
-                preview.innerHTML = '';
-                previewContainer.classList.add('hidden');
+    fileInput.addEventListener('change', function () {
+        preview.innerHTML = '';
+        previewContainer.classList.add('hidden');
 
-                if (this.files && this.files[0]) {
-                    const file = this.files[0];
-                    const ext = file.name.split('.').pop().toLowerCase();
-                    const fileSize = (file.size / 1024 / 1024).toFixed(2);
+        if (this.files && this.files[0]) {
+            const file = this.files[0];
+            const ext = file.name.split('.').pop().toLowerCase();
+            const fileSize = (file.size / 1024 / 1024).toFixed(2); // Size in MB
 
-                    if (file.size > 20 * 1024 * 1024) {
-                        alert('File size must be less than 20MB');
-                        this.value = '';
-                        return;
-                    }
+            // Check file size (20MB limit)
+            if (file.size > 20 * 1024 * 1024) {
+                alert('File size must be less than 20MB');
+                this.value = '';
+                return;
+            }
 
-                    previewContainer.classList.remove('hidden');
+            // Show preview container
+            previewContainer.classList.remove('hidden');
 
-                    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
-                        typeInput.value = "image";
-                        const container = document.createElement('div');
-                        container.className = "flex items-center space-x-3";
+            // ✅ Handle Image
+            if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
+                typeInput.value = "image";
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(file);
+                img.className = "h-16 w-16 object-cover rounded border";
+                preview.appendChild(img);
 
-                        const img = document.createElement('img');
-                        img.src = URL.createObjectURL(file);
-                        img.className = "h-16 w-16 object-cover rounded-lg border-2 border-blue-200";
+                const info = document.createElement('div');
+                info.className = "text-sm text-gray-600";
+                info.innerHTML = `<span class="font-medium">📷 Image:</span> ${file.name} (${fileSize} MB)`;
+                preview.appendChild(info);
 
-                        const info = document.createElement('div');
-                        info.innerHTML = `
-                            <p class="font-medium text-gray-800">📷 ${file.name}</p>
-                            <p class="text-sm text-gray-500">${fileSize} MB</p>
-                        `;
+            // ✅ Handle Audio
+            } else if (['mp3', 'wav', 'ogg', 'm4a'].includes(ext)) {
+                typeInput.value = "voice";
+                const icon = document.createElement('div');
+                icon.className = "w-16 h-16 bg-red-100 rounded border flex items-center justify-center text-2xl";
+                icon.textContent = "🎵";
+                preview.appendChild(icon);
 
-                        container.appendChild(img);
-                        container.appendChild(info);
-                        preview.appendChild(container);
+                const info = document.createElement('div');
+                info.className = "text-sm text-gray-600";
+                info.innerHTML = `<span class="font-medium">🎵 Audio:</span> ${file.name} (${fileSize} MB)`;
+                preview.appendChild(info);
 
-                    } else if (['mp3', 'wav', 'ogg', 'm4a'].includes(ext)) {
-                        typeInput.value = "voice";
-                        const container = document.createElement('div');
-                        container.className = "flex items-center space-x-3";
+            // ✅ Handle Video
+            } else if (['mp4', 'avi', 'mov', 'mkv'].includes(ext)) {
+                typeInput.value = "video";
+                const container = document.createElement('div');
+                container.className = "flex items-center space-x-3";
 
-                        const icon = document.createElement('div');
-                        icon.className = "w-16 h-16 bg-gradient-to-br from-red-100 to-red-200 rounded-lg border-2 border-red-200 flex items-center justify-center";
-                        icon.innerHTML = '<svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>';
+                const video = document.createElement('video');
+                video.src = URL.createObjectURL(file);
+                video.className = "h-16 rounded-lg border-2 border-green-200";
+                video.controls = true;
 
-                        const info = document.createElement('div');
-                        info.innerHTML = `
-                            <p class="font-medium text-gray-800">🎵 ${file.name}</p>
-                            <p class="text-sm text-gray-500">${fileSize} MB</p>
-                        `;
+                const info = document.createElement('div');
+                info.innerHTML = `
+                    <p class="font-medium text-gray-800">🎬 ${file.name}</p>
+                    <p class="text-sm text-gray-500">${fileSize} MB</p>
+                `;
 
-                        container.appendChild(icon);
-                        container.appendChild(info);
-                        preview.appendChild(container);
+                container.appendChild(video);
+                container.appendChild(info);
+                preview.appendChild(container);
 
-                    } else {
-                        typeInput.value = "file";
-                        const container = document.createElement('div');
-                        container.className = "flex items-center space-x-3";
+            // ✅ Default: Other Files
+            } else {
+                typeInput.value = "file";
+                const icon = document.createElement('div');
+                icon.className = "w-16 h-16 bg-gray-100 rounded border flex items-center justify-center text-2xl";
+                icon.textContent = "📄";
+                preview.appendChild(icon);
 
-                        const icon = document.createElement('div');
-                        icon.className = "w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg border-2 border-gray-200 flex items-center justify-center";
-                        icon.innerHTML = '<svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>';
+                const info = document.createElement('div');
+                info.className = "text-sm text-gray-600";
+                info.innerHTML = `<span class="font-medium">📄 File:</span> ${file.name} (${fileSize} MB)`;
+                preview.appendChild(info);
+            }
 
-                        const info = document.createElement('div');
-                        info.innerHTML = `
-                            <p class="font-medium text-gray-800">📄 ${file.name}</p>
-                            <p class="text-sm text-gray-500">${fileSize} MB</p>
-                        `;
-
-                        container.appendChild(icon);
-                        container.appendChild(info);
-                        preview.appendChild(container);
-                    }
-
-                    contentInput.value = "";
-                }
-            });
+            // Clear text input when file is selected
+            contentInput.value = "";
         }
+    });
+}
+
 
         function clearFileSelection() {
             const fileInput = document.getElementById('file-input');

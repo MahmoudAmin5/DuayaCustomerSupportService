@@ -16,7 +16,7 @@ class MessageRepository implements MessageRepositoryInterface
     {
         return Message::find($id);
     }
-    public function getMessagesByChatId(int $chatId): Collection
+    public function getMessagesByChatId($chatId): Collection
     {
         return Message::with('sender')->where('chat_id', $chatId)->get();
     }

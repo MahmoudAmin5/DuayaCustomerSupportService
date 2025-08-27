@@ -42,7 +42,7 @@ class ChatWebController extends Controller
         $validated = $request->validate([
             'chat_id'   => 'required|exists:chats,id',
             'sender_id' => 'required|exists:users,id',
-            'type'      => 'required|in:text,image,file,voice',
+            'type'      => 'required|in:text,image,file,voice,video',
             'content'   => 'nullable|string',
             'file_path' => 'nullable|file|max:20480', // max 20MB
         ]);
@@ -81,7 +81,7 @@ class ChatWebController extends Controller
         $validated = $request->validate([
             'chat_id' => 'required|exists:chats,id',
             'sender_id' => 'required|exists:users,id',
-            'type'    => 'required|in:text,image,file,voice',
+            'type'    => 'required|in:text,image,file,voice,video',
             'content' => 'nullable|string',
             'file_path'    => 'nullable|file', // max 20MB
         ]);

@@ -235,6 +235,14 @@
                                             <!-- Debug info (remove in production) -->
 
                                         </div>
+                                    @elseif($message->type === 'video' && $message->file_path)
+                                        <div class="bg-gray-100 rounded-lg">
+                                            <video controls class="w-full max-h-64 rounded-lg">
+                                                <source src="{{ asset('storage/' . $message->file_path) }}" type="video/mp4">
+                                                Your browser does not support video playback.
+                                            </video>
+                                        </div>
+
                                     @else
                                         <p class="text-sm leading-relaxed">Unsupported message type.</p>
                                     @endif
@@ -318,7 +326,7 @@
                         <div class="flex items-center space-x-2">
                             <!-- File Upload -->
                             <input type="file" name="file_path" id="file-input" class="hidden"
-                                accept="image/*,audio/*,.pdf,.doc,.docx,.txt,.zip,.rar">
+                                accept="image/*,audio/*,video/*,.pdf,.doc,.docx,.txt,.zip,.rar">
 
                             <button type="button" onclick="document.getElementById('file-input').click()"
                                 class="w-10 h-10 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-full flex items-center justify-center transition-all duration-200 hover-lift"
@@ -375,7 +383,7 @@
     <audio id="notificationSound" src="{{ asset('sounds/notification.mp3') }}" preload="auto"></audio>
 
     <script>
-         window.notificationManager = {
+        window.notificationManager = {
             playNotificationSound() {
                 const sound = document.getElementById('notificationSound');
                 if (sound) {
@@ -401,76 +409,98 @@
                 messagesDiv.scrollTop = messagesDiv.scrollHeight;
             }
         }
-        function initializeFileHandling() {
-            const fileInput = document.getElementById('file-input');
-            const preview = document.getElementById('file-preview');
-            const previewContainer = document.getElementById('file-preview-container');
-            const typeInput = document.getElementById('message-type');
-            const contentInput = document.getElementById('content-input');
+          function initializeFileHandling() {
+    const fileInput = document.getElementById('file-input');
+    const preview = document.getElementById('file-preview');
+    const previewContainer = document.getElementById('file-preview-container');
+    const typeInput = document.getElementById('message-type');
+    const contentInput = document.getElementById('content-input');
 
-            fileInput.addEventListener('change', function () {
-                preview.innerHTML = '';
-                previewContainer.classList.add('hidden');
+    fileInput.addEventListener('change', function () {
+        preview.innerHTML = '';
+        previewContainer.classList.add('hidden');
 
-                if (this.files && this.files[0]) {
-                    const file = this.files[0];
-                    const ext = file.name.split('.').pop().toLowerCase();
-                    const fileSize = (file.size / 1024 / 1024).toFixed(2); // Size in MB
+        if (this.files && this.files[0]) {
+            const file = this.files[0];
+            const ext = file.name.split('.').pop().toLowerCase();
+            const fileSize = (file.size / 1024 / 1024).toFixed(2); // Size in MB
 
-                    // Check file size (20MB limit)
-                    if (file.size > 20 * 1024 * 1024) {
-                        alert('File size must be less than 20MB');
-                        this.value = '';
-                        return;
-                    }
+            // Check file size (20MB limit)
+            if (file.size > 20 * 1024 * 1024) {
+                alert('File size must be less than 20MB');
+                this.value = '';
+                return;
+            }
 
-                    // Show preview container
-                    previewContainer.classList.remove('hidden');
+            // Show preview container
+            previewContainer.classList.remove('hidden');
 
-                    // Handle different file types
-                    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
-                        typeInput.value = "image";
-                        const img = document.createElement('img');
-                        img.src = URL.createObjectURL(file);
-                        img.className = "h-16 w-16 object-cover rounded border";
-                        preview.appendChild(img);
+            // ✅ Handle Image
+            if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
+                typeInput.value = "image";
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(file);
+                img.className = "h-16 w-16 object-cover rounded border";
+                preview.appendChild(img);
 
-                        const info = document.createElement('div');
-                        info.className = "text-sm text-gray-600";
-                        info.innerHTML = `<span class="font-medium">📷 Image:</span> ${file.name} (${fileSize} MB)`;
-                        preview.appendChild(info);
+                const info = document.createElement('div');
+                info.className = "text-sm text-gray-600";
+                info.innerHTML = `<span class="font-medium">📷 Image:</span> ${file.name} (${fileSize} MB)`;
+                preview.appendChild(info);
 
-                    } else if (['mp3', 'wav', 'ogg', 'm4a'].includes(ext)) {
-                        typeInput.value = "voice";
-                        const icon = document.createElement('div');
-                        icon.className = "w-16 h-16 bg-red-100 rounded border flex items-center justify-center text-2xl";
-                        icon.textContent = "🎵";
-                        preview.appendChild(icon);
+            // ✅ Handle Audio
+            } else if (['mp3', 'wav', 'ogg', 'm4a'].includes(ext)) {
+                typeInput.value = "voice";
+                const icon = document.createElement('div');
+                icon.className = "w-16 h-16 bg-red-100 rounded border flex items-center justify-center text-2xl";
+                icon.textContent = "🎵";
+                preview.appendChild(icon);
 
-                        const info = document.createElement('div');
-                        info.className = "text-sm text-gray-600";
-                        info.innerHTML = `<span class="font-medium">🎵 Audio:</span> ${file.name} (${fileSize} MB)`;
-                        preview.appendChild(info);
+                const info = document.createElement('div');
+                info.className = "text-sm text-gray-600";
+                info.innerHTML = `<span class="font-medium">🎵 Audio:</span> ${file.name} (${fileSize} MB)`;
+                preview.appendChild(info);
 
-                    } else {
-                        typeInput.value = "file";
-                        const icon = document.createElement('div');
-                        icon.className = "w-16 h-16 bg-gray-100 rounded border flex items-center justify-center text-2xl";
-                        icon.textContent = "📄";
-                        preview.appendChild(icon);
+            // ✅ Handle Video
+            } else if (['mp4', 'avi', 'mov', 'mkv'].includes(ext)) {
+                typeInput.value = "video";
+                const container = document.createElement('div');
+                container.className = "flex items-center space-x-3";
 
-                        const info = document.createElement('div');
-                        info.className = "text-sm text-gray-600";
-                        info.innerHTML = `<span class="font-medium">📄 File:</span> ${file.name} (${fileSize} MB)`;
-                        preview.appendChild(info);
-                    }
+                const video = document.createElement('video');
+                video.src = URL.createObjectURL(file);
+                video.className = "h-16 rounded-lg border-2 border-green-200";
+                video.controls = true;
 
-                    // Clear text input when file is selected
-                    contentInput.value = "";
-                }
-            });
+                const info = document.createElement('div');
+                info.innerHTML = `
+                    <p class="font-medium text-gray-800">🎬 ${file.name}</p>
+                    <p class="text-sm text-gray-500">${fileSize} MB</p>
+                `;
+
+                container.appendChild(video);
+                container.appendChild(info);
+                preview.appendChild(container);
+
+            // ✅ Default: Other Files
+            } else {
+                typeInput.value = "file";
+                const icon = document.createElement('div');
+                icon.className = "w-16 h-16 bg-gray-100 rounded border flex items-center justify-center text-2xl";
+                icon.textContent = "📄";
+                preview.appendChild(icon);
+
+                const info = document.createElement('div');
+                info.className = "text-sm text-gray-600";
+                info.innerHTML = `<span class="font-medium">📄 File:</span> ${file.name} (${fileSize} MB)`;
+                preview.appendChild(info);
+            }
+
+            // Clear text input when file is selected
+            contentInput.value = "";
         }
-
+    });
+}
 
         function initializeFileHandling() {
             const fileInput = document.getElementById('file-input');
